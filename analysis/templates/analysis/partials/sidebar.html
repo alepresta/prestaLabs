@@ -1,0 +1,76 @@
+<aside class="sidebar" id="governmentSidebar">
+    <div class="sidebar-header">
+        <h5><i class="fas fa-tools me-2"></i>Herramientas</h5>
+        <button class="sidebar-close" onclick="governmentSidebar.toggle()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="sidebar-content">
+        <!-- Análisis Rápido -->
+        <div class="sidebar-section">
+            <h6><i class="fas fa-bolt me-2"></i>Análisis Rápido</h6>
+            <div class="quick-actions">
+                <a href="{% url 'analysis:analyze_single_url' %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                    <i class="fas fa-link me-2"></i>URL Individual
+                </a>
+                <a href="{% url 'analysis:analyze_full_site' %}" class="btn btn-outline-success btn-sm w-100 mb-2">
+                    <i class="fas fa-sitemap me-2"></i>Sitio Completo
+                </a>
+                <button class="btn btn-outline-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#quickAnalysisModal">
+                    <i class="fas fa-magic me-2"></i>Análisis Express
+                </button>
+            </div>
+        </div>
+        
+        <!-- Estadísticas -->
+        <div class="sidebar-section">
+            <h6><i class="fas fa-chart-bar me-2"></i>Estadísticas</h6>
+            <div class="stats-mini">
+                <div class="stat-item">
+                    <span class="stat-number">{{ stats.total_domains|default:0 }}</span>
+                    <span class="stat-label">Dominios</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ stats.total_sessions|default:0 }}</span>
+                    <span class="stat-label">Análisis</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ stats.avg_accessibility_score|floatformat:0|default:0 }}%</span>
+                    <span class="stat-label">Score Promedio</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Accesos Directos -->
+        <div class="sidebar-section">
+            <h6><i class="fas fa-star me-2"></i>Accesos Directos</h6>
+            <div class="shortcuts">
+                <a href="{% url 'analysis:add_domain' %}" class="shortcut-item">
+                    <i class="fas fa-plus-circle text-success"></i>
+                    <span>Nuevo Dominio</span>
+                </a>
+                <a href="#" class="shortcut-item" data-bs-toggle="modal" data-bs-target="#reportsModal">
+                    <i class="fas fa-file-alt text-info"></i>
+                    <span>Generar Reporte</span>
+                </a>
+                <a href="#" class="shortcut-item" data-bs-toggle="modal" data-bs-target="#helpModal">
+                    <i class="fas fa-question-circle text-warning"></i>
+                    <span>Ayuda</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="sidebar-footer">
+        <small class="text-muted">
+            <i class="fas fa-shield-alt me-1"></i>
+            Gobierno Argentino
+        </small>
+    </div>
+</aside>
+
+<!-- Sidebar Toggle Button -->
+<button class="sidebar-toggle" onclick="governmentSidebar.toggle()" title="Herramientas">
+    <i class="fas fa-tools"></i>
+</button>
