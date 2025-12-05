@@ -1,0 +1,238 @@
+<!-- Modal: Análisis Express -->
+<div class="modal fade" id="quickAnalysisModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-magic me-2"></i>Análisis Express</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickAnalysisForm">
+                    <div class="mb-3">
+                        <label for="quickUrl" class="form-label">URL a analizar</label>
+                        <input type="url" class="form-control" id="quickUrl" placeholder="https://ejemplo.com">
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        El análisis express evalúa accesibilidad básica y métricas técnicas.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>Analizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Generar Reportes -->
+<div class="modal fade" id="reportsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Generar Reporte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Tipo de Reporte</h6>
+                        <div class="list-group">
+                            <label class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" name="reportType" value="accessibility">
+                                Accesibilidad Completa
+                            </label>
+                            <label class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" name="reportType" value="technical">
+                                Análisis Técnico
+                            </label>
+                            <label class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" name="reportType" value="executive">
+                                Reporte Ejecutivo
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Formato</h6>
+                        <select class="form-select">
+                            <option value="pdf">PDF</option>
+                            <option value="html">HTML</option>
+                            <option value="csv">CSV (Datos)</option>
+                        </select>
+                        
+                        <h6 class="mt-3">Incluir</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeGraphs">
+                            <label class="form-check-label" for="includeGraphs">Gráficos</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeDetails">
+                            <label class="form-check-label" for="includeDetails">Detalles técnicos</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success">
+                    <i class="fas fa-download me-2"></i>Generar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Perfil -->
+<div class="modal fade" id="profileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user me-2"></i>Mi Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle fa-4x text-primary"></i>
+                    </div>
+                    <h5 class="mt-2">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h6>{{ user.domain_set.count }}</h6>
+                            <small class="text-muted">Dominios</small>
+                        </div>
+                        <div class="col-4">
+                            <h6>{{ user.crawlingsession_set.count }}</h6>
+                            <small class="text-muted">Análisis</small>
+                        </div>
+                        <div class="col-4">
+                            <h6>{{ user.date_joined|date:"M Y" }}</h6>
+                            <small class="text-muted">Miembro desde</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Configuración -->
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-cog me-2"></i>Configuración</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Notificaciones</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">Email</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="browserNotifications">
+                            <label class="form-check-label" for="browserNotifications">Navegador</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Análisis por defecto</label>
+                        <select class="form-select">
+                            <option>Estándar (50 páginas)</option>
+                            <option>Completo (200 páginas)</option>
+                            <option>Express (10 páginas)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ayuda -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-question-circle me-2"></i>Ayuda y Documentación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-book me-2"></i>Guías</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-play-circle me-2"></i>Primeros pasos
+                            </a></li>
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-search me-2"></i>Cómo analizar un sitio
+                            </a></li>
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-chart-bar me-2"></i>Interpretar resultados
+                            </a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-life-ring me-2"></i>Soporte</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-envelope me-2"></i>Contactar soporte
+                            </a></li>
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-bug me-2"></i>Reportar problema
+                            </a></li>
+                            <li><a href="#" class="text-decoration-none">
+                                <i class="fas fa-lightbulb me-2"></i>Sugerir mejora
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Accesibilidad -->
+<div class="modal fade" id="accessibilityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-universal-access me-2"></i>Declaración de Accesibilidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta plataforma cumple con los estándares de accesibilidad web:</p>
+                <ul>
+                    <li><strong>WCAG 2.1 AA</strong> - Pautas de accesibilidad</li>
+                    <li><strong>Ley 26.653</strong> - Accesibilidad de la información</li>
+                    <li><strong>Decreto 355/2017</strong> - Plan de Gobierno Digital</li>
+                </ul>
+                <p class="text-muted">
+                    Para reportar problemas de accesibilidad o solicitar asistencia, 
+                    contacte a nuestro equipo de soporte.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,241 @@
+{% extends 'analysis/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Presta Labs{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-6 mb-2">
+                <i class="fas fa-tachometer-alt me-3 text-primary"></i>
+                Dashboard de Análisis
+            </h1>
+            <p class="lead text-muted">
+                Bienvenido, <strong>{{ user.get_full_name|default:user.username }}</strong>. 
+                Aquí tienes un resumen de tus análisis de accesibilidad web.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'analysis:analyze_full_site' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Nuevo Análisis
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas principales -->
+<div class="row mb-5">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card government-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-primary">
+                        <i class="fas fa-globe text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-number mb-0">{{ stats.total_domains }}</h3>
+                        <p class="card-label mb-0">Dominios Registrados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card government-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-success">
+                        <i class="fas fa-search text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-number mb-0">{{ stats.total_sessions }}</h3>
+                        <p class="card-label mb-0">Análisis Realizados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card government-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-info">
+                        <i class="fas fa-link text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-number mb-0">{{ stats.total_urls_analyzed }}</h3>
+                        <p class="card-label mb-0">URLs Procesadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card government-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-warning">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="card-number mb-0">{{ stats.avg_accessibility_score|floatformat:0 }}%</h3>
+                        <p class="card-label mb-0">Score Promedio</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido principal -->
+<div class="row">
+    <!-- Sesiones recientes -->
+    <div class="col-lg-8 mb-4">
+        <div class="card government-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Análisis Recientes
+                </h5>
+                <a href="{% url 'analysis:domain_list' %}" class="btn btn-outline-primary btn-sm">
+                    Ver todos
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Dominio</th>
+                                    <th>Estado</th>
+                                    <th>URLs</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ session.domain.name }}</strong>
+                                        <br><small class="text-muted">{{ session.domain.url }}</small>
+                                    </td>
+                                    <td>
+                                        {% if session.status == 'completed' %}
+                                            <span class="badge bg-success">Completado</span>
+                                        {% elif session.status == 'running' %}
+                                            <span class="badge bg-primary">En progreso</span>
+                                        {% elif session.status == 'failed' %}
+                                            <span class="badge bg-danger">Error</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Pendiente</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-success">{{ session.processed_urls }}</span>
+                                        <span class="text-muted">/ {{ session.total_urls }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ session.started_at|date:"d/m/Y H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'analysis:session_detail' session.id %}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>No hay análisis recientes</h5>
+                        <p class="text-muted">Comienza analizando tu primer dominio</p>
+                        <a href="{% url 'analysis:add_domain' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Agregar Dominio
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar con información adicional -->
+    <div class="col-lg-4">
+        <!-- Dominios activos -->
+        <div class="card government-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>Mis Dominios
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if user_domains %}
+                    {% for domain in user_domains %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="domain-icon me-3">
+                                <i class="fas fa-globe text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ domain.name }}</h6>
+                                <small class="text-muted">{{ domain.url }}</small>
+                            </div>
+                            <a href="{% url 'analysis:domain_detail' domain.id %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                    <a href="{% url 'analysis:domain_list' %}" class="btn btn-outline-secondary w-100">
+                        Ver todos mis dominios
+                    </a>
+                {% else %}
+                    <div class="text-center">
+                        <i class="fas fa-plus-circle fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-2">No tienes dominios registrados</p>
+                        <a href="{% url 'analysis:add_domain' %}" class="btn btn-primary btn-sm">
+                            Agregar primero
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Top URLs -->
+        <div class="card government-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy me-2"></i>Mejores Puntuaciones
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_urls %}
+                    {% for analysis in top_urls %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="score-badge me-3">
+                                {{ analysis.accessibility_score|floatformat:0 }}%
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">{{ analysis.title|truncatechars:30 }}</h6>
+                                <small class="text-muted">{{ analysis.url|truncatechars:40 }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center">
+                        <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No hay análisis completados</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

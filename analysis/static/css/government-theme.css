@@ -1,0 +1,294 @@
+/* ========================================
+   PRESTA LABS - GOBIERNO ARGENTINO
+   ======================================== */
+
+:root {
+    --blue-primary: #0066CC;
+    --blue-dark: #242C4F;
+    --yellow-corporate: #FFD700;
+    --gray-50: #F8F9FA;
+    --gray-100: #E9ECEF;
+    --gray-200: #DEE2E6;
+    --gray-600: #6C757D;
+    --gray-800: #343A40;
+    --gray-900: #212529;
+}
+
+/* Tipografía */
+body {
+    font-family: 'Encode Sans', Arial, sans-serif;
+    color: var(--gray-800);
+    line-height: 1.6;
+}
+
+/* Navbar */
+.government-navbar {
+    background: var(--blue-dark);
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(36, 44, 79, 0.1);
+}
+
+.navbar-brand .brand-container {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--yellow-corporate);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: var(--blue-dark);
+    font-size: 1.2rem;
+}
+
+.navbar-brand .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.navbar-brand .brand-name {
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.navbar-brand .brand-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.government-navbar .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.government-navbar .navbar-nav .nav-link:hover {
+    color: var(--yellow-corporate);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+/* Cards */
+.government-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 102, 204, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.government-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 102, 204, 0.15);
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.card-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+}
+
+.card-label {
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    right: -350px;
+    top: 0;
+    width: 350px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 20px rgba(0, 102, 204, 0.1);
+    z-index: 1050;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+.sidebar-header {
+    background: var(--blue-dark);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+.sidebar-section {
+    margin-bottom: 2rem;
+}
+
+.sidebar-section h6 {
+    color: var(--blue-dark);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--blue-primary);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0, 102, 204, 0.3);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    background: var(--blue-dark);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Footer */
+.government-footer {
+    background: var(--blue-dark);
+    color: white;
+    padding: 3rem 0 2rem;
+    margin-top: auto;
+}
+
+.government-footer .footer-brand .logo-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--yellow-corporate);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: var(--blue-dark);
+    font-size: 1.5rem;
+}
+
+.footer-title {
+    color: var(--yellow-corporate);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--yellow-corporate);
+}
+
+.footer-stats .stat-item {
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 2rem 0 1rem;
+}
+
+.government-badges .badge {
+    margin-right: 0.5rem;
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+/* Dashboard específico */
+.dashboard-header {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 102, 204, 0.08);
+}
+
+.score-badge {
+    background: var(--blue-primary);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    min-width: 60px;
+}
+
+/* Utilidades */
+.text-blue-primary { color: var(--blue-primary) !important; }
+.text-blue-dark { color: var(--blue-dark) !important; }
+.bg-blue-primary { background-color: var(--blue-primary) !important; }
+.bg-blue-dark { background-color: var(--blue-dark) !important; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100vw;
+        right: -100vw;
+    }
+    
+    .main-content {
+        padding: 1rem 0;
+    }
+    
+    .dashboard-header {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .card-number {
+        font-size: 2rem;
+    }
+}
