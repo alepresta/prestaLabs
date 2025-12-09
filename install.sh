@@ -142,9 +142,16 @@ function recolectar_estaticos() {
 }
 
 function borrar_cache() {
-    echo "Borrando caché (__pycache__)..."
+    activar_entorno
+    echo "Borrando caché de Django y archivos __pycache__..."
+    # Limpiar caché de Django (si está configurado)
+    python manage.py shell -c "from django.core.cache import cache; cache.clear()"
+    # Eliminar caché de archivos Python
     find . -type d -name '__pycache__' -exec rm -rf {} +
-    echo "Caché eliminada."
+    # Recolectar archivos estáticos
+    python manage.py collectstatic --noinput
+    echo "Caché de Django y archivos estáticos eliminados."
+    echo "Recuerda hacer un hard refresh (Ctrl+F5) en tu navegador para limpiar la caché local."
 }
 
 function actualizar_codigo() {
@@ -174,8 +181,9 @@ function instalar_todo() {
     migrar_db
     crear_superusuario
     recolectar_estaticos
+    borrar_cache
     reiniciar_servidor
-    echo "\nInstalación completa y servidor iniciado."
+    echo "\nInstalación completa, caché limpiada y servidor iniciado."
 }
 
 function ayuda() {
@@ -191,11 +199,11 @@ function ayuda() {
     echo "  cerrar         - Desactivar entorno virtual"
     echo "  redis          - Instalar y ejecutar Redis"
     echo "  estaticos      - Recolectar archivos estáticos"
-    echo "  borrar_cache   - Eliminar caché (__pycache__)"
+    echo "  borrar_cache   - Limpiar caché de Django, archivos __pycache__ y estáticos"
     echo "  actualizar     - Actualizar código con git pull origin main"
     echo "  usuario_lectura - Crear usuario de solo vista (lectura, sin acceso admin)"
     echo "  integridad     - Verificar integridad de la base de datos"
-    echo "  todo           - Ejecutar todos los pasos de instalación"
+    echo "  todo           - Ejecutar todos los pasos de instalación (incluye limpieza de caché)"
     echo "  calidad        - Instalar herramientas de calidad y seguridad (pytest, bandit, pre-commit, coverage)"
     echo "  ayuda          - Mostrar esta ayuda"
     echo "\nEjemplo: ./install.sh entorno"
