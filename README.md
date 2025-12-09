@@ -9,21 +9,14 @@
 ## Descripción
 Proyecto Django para laboratorio de desarrollo.
 
-## Instalación
-
-1. Clona el repositorio:
-
-## Instalación rápida con script
-
-Puedes usar el script `install.sh` para automatizar la instalación y gestión del proyecto en Linux:
+## Instalación rápida
 
 ```bash
 chmod +x install.sh
-./install.sh ayuda
+./install.sh todo
 ```
 
-### Comandos disponibles en install.sh
-
+## Comandos disponibles en install.sh
 
 | Comando         | Descripción                                      |
 |-----------------|--------------------------------------------------|
@@ -34,220 +27,79 @@ chmod +x install.sh
 | superusuario    | Crear superusuario de Django                      |
 | servidor        | Iniciar servidor de desarrollo Django             |
 | reiniciar_servidor | Reiniciar el servidor Django en segundo plano  |
-# Reiniciar el servidor de desarrollo
-./install.sh reiniciar_servidor
 | celery          | Iniciar worker de Celery                          |
 | cerrar          | Desactivar entorno virtual                        |
 | redis           | Instalar y ejecutar Redis                         |
-| estaticos       | Recolectar archivos estáticos para producción     |
-| borrar_cache    | Eliminar caché (__pycache__) de Python            |
+| estaticos       | Recolectar archivos estáticos                     |
+| borrar_cache    | Eliminar caché (__pycache__)                      |
 | actualizar      | Actualizar código con git pull origin main        |
-| ayuda           | Mostrar ayuda y comandos disponibles              |
-| usuario_lectura | Crear usuario de solo vista (lectura, sin acceso admin) |
+| usuario_lectura | Crear usuario de solo vista (lectura, sin admin)  |
+| integridad      | Verificar integridad de la base de datos          |
+| todo            | Ejecuta todos los pasos de instalación            |
+| ayuda           | Mostrar esta ayuda                                |
 
-#### Ejemplos de uso de comandos
+## Estructura de tests y cobertura
+
+- Todos los tests automáticos están en la raíz de la app `core/` y siguen el patrón `test_*.py`.
+- Cobertura:
+  - Formularios (`test_all.py`)
+  - Modelos (`test_all.py`)
+  - Vistas y redirecciones (`test_all.py`)
+  - API (`test_all.py`)
+  - Scripts (`test_scripts.py`)
+- Para ejecutar todos los tests:
 
 ```bash
-# Crear y activar entorno virtual
-./install.sh entorno
-
-# Instalar dependencias
-./install.sh dependencias
-
-# Copiar archivo .env de ejemplo
-./install.sh env
-
-# Ejecutar migraciones
-./install.sh migrar
-
-# Crear superusuario
-./install.sh superusuario
-
-# Iniciar servidor de desarrollo
-./install.sh servidor
-
-# Iniciar worker de Celery
-./install.sh celery
-
-# Desactivar entorno virtual
-./install.sh cerrar
-
-# Instalar y ejecutar Redis
-./install.sh redis
-
-# Recolectar archivos estáticos
-./install.sh estaticos
-
-# Eliminar caché (__pycache__)
-./install.sh borrar_cache
-
-# Actualizar código desde origin/main
-./install.sh actualizar
-
-# Mostrar ayuda
-./install.sh ayuda
-
-# Crear usuario de solo vista (lectura)
-./install.sh usuario_lectura
-```
-
-
-Instalación completa con un solo comando (incluye iniciar/reiniciar el servidor):
-```bash
-./install.sh todo
-```
-Esto instalará todo y levantará el dashboard en el puerto 5001, con el superusuario creado automáticamente.
-
-Para tareas en segundo plano:
-```bash
-./install.sh redis
-./install.sh celery
-```
-
----
-
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/alepresta/prestaLabs.git
-cd prestaLabs
-```
-
-### 2. Crear y activar entorno virtual
-#### Linux/MacOS:
-```bash
-python3 -m venv venv
 source venv/bin/activate
-```
-#### Windows (PowerShell):
-```powershell
-python -m venv venv
-venv\Scripts\activate
+python manage.py test core
 ```
 
-### 3. Instalar dependencias
+## Buenas prácticas
+
+- Mantén los tests en archivos separados o unificados en la raíz de la app.
+- No uses carpetas `tests/` con `__init__.py` para evitar conflictos de importación.
+- Limpia caché con `find core -name '__pycache__' -type d -exec rm -rf {} +` si hay problemas de importación.
+
+## Proceso de refactorización y automatización
+
+1. Limpieza y refactorización de código: imports, docstrings, separación de formularios.
+2. Reorganización de apps y estructura: formularios y utilidades en archivos dedicados.
+3. Conversión de vistas a CBV.
+4. Mejoras de seguridad y validaciones: mensajes de Django, permisos.
+5. Automatización y scripts: gestión centralizada y chequeos de integridad.
+6. Tests automáticos: cobertura completa y estructura estándar.
+
+## Comandos útiles para calidad y seguridad
+
+### Testing y cobertura
 ```bash
-pip install -r requirements.txt
+source venv/bin/activate
+pytest                # Ejecuta todos los tests con pytest
+coverage run --source=core manage.py test core  # Ejecuta tests y mide cobertura
+coverage report -m   # Muestra reporte de cobertura
 ```
 
-### 4. Configurar variables de entorno
+### Seguridad
 ```bash
-cp .env.example .env
-# Edita el archivo .env con tus configuraciones
-```
-En Windows:
-```powershell
-copy .env.example .env
+bandit -r core       # Analiza seguridad del código Python
 ```
 
-#### Ejemplo de archivo .env
-```env
-SECRET_KEY=tu-clave-secreta
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-DB_ENGINE=django.db.backends.sqlite3
-DB_NAME=db.sqlite3
-DB_USER=
-DB_PASSWORD=
-DB_HOST=
-DB_PORT=
-REDIS_URL=redis://localhost:6379/0
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-EMAIL_HOST=
-EMAIL_PORT=587
-```
-
-### 5. Ejecutar migraciones de la base de datos
+### Formato y lint automático
 ```bash
-python manage.py migrate
+pre-commit run --all-files   # Ejecuta Black, Flake8 y Bandit en todo el repo
 ```
 
-### 6. Crear superusuario (opcional)
-Al ejecutar `./install.sh superusuario` por primera vez, se te pedirá la contraseña para el usuario administrador. No queda guardada en ningún archivo.
-
-### Crear usuarios solo vista (lectura)
-Puedes crear usuarios de solo vista ejecutando:
-```bash
-./install.sh usuario_lectura
-```
-Se te pedirá el nombre de usuario, email y contraseña por consola. Estos usuarios solo podrán ver el dashboard y no podrán editar ni acceder al panel de administración.
-
-### 7. Iniciar el servidor de desarrollo
-```bash
-python manage.py runserver 0.0.0.0:5001
-```
-
-### 8. Probar la API y vistas
-- Accede a `http://localhost:5001/` para el dashboard principal.
-  - Usuario por defecto: **usuario_demo**
-  - Email: **demo@ejemplo.com**
-  - Password: **Demo123!**
-- Accede a `http://localhost:5001/status/` para el estado de la API.
-- Accede a `http://localhost:5001/admin/` para el panel de administración.
-
-### 9. Ejecutar pruebas automáticas
-```bash
-python manage.py test
-```
-
-### 10. Uso de Celery (tareas en segundo plano)
-Para usar Celery necesitas tener Redis corriendo:
-```bash
-sudo apt install redis-server   # Linux
-sudo service redis-server start # Linux
-# En Windows, instala Redis desde https://github.com/microsoftarchive/redis/releases
-```
-Luego, inicia el worker de Celery:
-```bash
-celery -A prestaLabs worker --loglevel=info
-```
-
-### 11. Recolección de archivos estáticos para producción
-```bash
-python manage.py collectstatic
-```
+### Buenas prácticas finales
+- Mantén los tests en la raíz de cada app, sin carpetas `tests/` con `__init__.py`.
+- Usa Factory Boy para datos de prueba complejos.
+- No uses contraseñas hardcodeadas fuera de tests.
+- Usa subprocess solo en tests y nunca con datos no controlados.
+- Integra estos comandos en tu CI/CD para máxima calidad.
 
 ---
 
-## Notas importantes
-- El proyecto requiere Python 3.8 o superior.
-- Celery y Redis son necesarios para tareas en segundo plano.
-- Si usas Linux, todos los comandos funcionan tal cual están escritos.
-- En Windows, usa PowerShell para activar el entorno y copiar archivos.
-- Para producción, configura correctamente las variables de entorno y desactiva DEBUG.
+¡Proyecto listo para desarrollo profesional, testing avanzado y despliegue seguro!
 
-## Estructura del proyecto
-```
-prestaLabs/
-├── manage.py
-├── requirements.txt
-├── .env.example
-├── README.md
-├── core/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── tests.py
-│   ├── views.py
-│   └── urls.py
-├── prestaLabs/
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── celery.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── static/
-├── media/
-├── templates/
-│   └── base.html
-└── ...
-```
+---
 
-## Contribución
-1. Haz fork del proyecto
-2. Crea una nueva rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+¿Dudas? Consulta los comandos de ayuda o revisa los tests para ejemplos de uso.

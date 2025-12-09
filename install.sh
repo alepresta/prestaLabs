@@ -1,3 +1,11 @@
+function instalar_herramientas_calidad() {
+    echo "Instalando herramientas de calidad y seguridad (pytest, pytest-django, factory-boy, bandit, pre-commit, coverage)..."
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install pytest pytest-django factory-boy bandit pre-commit coverage
+    pre-commit install
+    echo "Herramientas instaladas y pre-commit configurado."
+}
 #!/bin/bash
 
 function crear_usuario_lectura() {
@@ -174,12 +182,17 @@ function ayuda() {
     echo "  borrar_cache   - Eliminar caché (__pycache__)"
     echo "  actualizar     - Actualizar código con git pull origin main"
     echo "  usuario_lectura - Crear usuario de solo vista (lectura, sin acceso admin)"
+    echo "  integridad     - Verificar integridad de la base de datos"
     echo "  todo           - Ejecutar todos los pasos de instalación"
+    echo "  calidad        - Instalar herramientas de calidad y seguridad (pytest, bandit, pre-commit, coverage)"
     echo "  ayuda          - Mostrar esta ayuda"
     echo "\nEjemplo: ./install.sh entorno"
 }
 
 case "$1" in
+        calidad)
+            instalar_herramientas_calidad
+            ;;
     entorno)
         crear_entorno
         ;;
@@ -221,6 +234,9 @@ case "$1" in
         ;;
     usuario_lectura)
         crear_usuario_lectura
+        ;;
+    integridad)
+        bash verificar_integridad.sh
         ;;
     todo)
         instalar_todo

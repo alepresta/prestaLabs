@@ -6,9 +6,7 @@
     <div class="card mt-4">
       <div class="card-header bg-success text-white">Crear usuario de solo vista</div>
       <div class="card-body">
-        {% if mensaje %}
-          <div class="alert alert-info">{{ mensaje }}</div>
-        {% endif %}
+        {# Los mensajes ahora se muestran en base.html #}
         <form method="post">
           {% csrf_token %}
           {{ form.as_p }}

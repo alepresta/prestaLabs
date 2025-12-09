@@ -3,13 +3,7 @@
 {% block title %}Editar Usuarios | PrestaLabs{% endblock %}
 {% block content %}
 <h2>Editar usuarios</h2>
-{% if mensaje == 'creado' %}
-<div class="alert alert-success">Usuario creado correctamente.</div>
-{% elif mensaje == 'editado' %}
-<div class="alert alert-success">Usuario editado correctamente.</div>
-{% elif mensaje == 'eliminado' %}
-<div class="alert alert-success">Usuario eliminado correctamente.</div>
-{% endif %}
+{# Los mensajes ahora se muestran en base.html #}
 <a href="/usuarios/crear/" class="btn btn-success mb-3">Crear usuario</a>
 <table class="table">
     <thead>
