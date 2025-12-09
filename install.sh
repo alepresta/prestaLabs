@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function crear_usuario_lectura() {
     activar_entorno
     echo "Ingrese el nombre de usuario de solo vista:"
