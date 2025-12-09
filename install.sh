@@ -146,6 +146,8 @@ function actualizar_codigo() {
 }
 
 function instalar_todo() {
+    echo "Actualizando código desde origin/main..."
+    git pull origin main
     crear_entorno
     instalar_dependencias
     copiar_env
