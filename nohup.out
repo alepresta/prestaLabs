@@ -1,0 +1,898 @@
+Watching for file changes with StatReloader
+[09/Dec/2025 11:03:51] "GET / HTTP/1.1" 200 32
+Not Found: /favicon.ico
+[09/Dec/2025 11:03:52] "GET /favicon.ico HTTP/1.1" 404 2678
+Watching for file changes with StatReloader
+[09/Dec/2025 11:05:56] "GET / HTTP/1.1" 200 32
+Not Found: /favicon.ico
+[09/Dec/2025 11:05:57] "GET /favicon.ico HTTP/1.1" 404 2678
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:05:48
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:07:47
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Internal Server Error: /
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/urls/base.py", line 71, in reverse
+    extra, resolver = resolver.namespace_dict[ns]
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^
+KeyError: 'core'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 10, in index
+    return render(request, "dashboard.html")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 471, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/urls/base.py", line 82, in reverse
+    raise NoReverseMatch("%s is not a registered namespace" % key)
+django.urls.exceptions.NoReverseMatch: 'core' is not a registered namespace
+[09/Dec/2025 11:08:13] "GET / HTTP/1.1" 500 145213
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:07:52
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:10:13
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:10:27] "GET / HTTP/1.1" 302 0
+Not Found: /login/
+[09/Dec/2025 11:10:27] "GET /login/?next=/ HTTP/1.1" 404 2670
+/workspaces/prestaLabs/prestaLabs/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:10:20
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/prestaLabs/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:11:46
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Internal Server Error: /login/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/urls/base.py", line 71, in reverse
+    extra, resolver = resolver.namespace_dict[ns]
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^
+KeyError: 'core'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 471, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/urls/base.py", line 82, in reverse
+    raise NoReverseMatch("%s is not a registered namespace" % key)
+django.urls.exceptions.NoReverseMatch: 'core' is not a registered namespace
+[09/Dec/2025 11:12:28] "GET /login/?next=/ HTTP/1.1" 500 145500
+/workspaces/prestaLabs/prestaLabs/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:12:17
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/prestaLabs/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:13:09
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:13:20] "GET / HTTP/1.1" 302 0
+[09/Dec/2025 11:13:20] "GET /login/?next=/ HTTP/1.1" 200 1808
+[09/Dec/2025 11:13:35] "POST /login/?next=/ HTTP/1.1" 302 0
+[09/Dec/2025 11:13:35] "GET / HTTP/1.1" 200 3447
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:14:54
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:20:58
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:21:08
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:21:39] "GET / HTTP/1.1" 200 3447
+[09/Dec/2025 11:21:47] "GET / HTTP/1.1" 200 3447
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:21:33
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:26:22
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:26:26
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/urls.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:26:28
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:26:44] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:26:50] "GET /logout/ HTTP/1.1" 302 0
+[09/Dec/2025 11:26:50] "GET /login/ HTTP/1.1" 200 2441
+[09/Dec/2025 11:26:52] "POST /login/ HTTP/1.1" 302 0
+Not Found: /accounts/profile/
+[09/Dec/2025 11:26:52] "GET /accounts/profile/ HTTP/1.1" 404 3317
+[09/Dec/2025 11:26:55] "GET /login/ HTTP/1.1" 200 2999
+[09/Dec/2025 11:27:18] "POST /login/ HTTP/1.1" 200 3091
+[09/Dec/2025 11:27:22] "POST /login/ HTTP/1.1" 302 0
+Not Found: /accounts/profile/
+[09/Dec/2025 11:27:22] "GET /accounts/profile/ HTTP/1.1" 404 3317
+/workspaces/prestaLabs/prestaLabs/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:26:39
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/prestaLabs/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:29:45
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[09/Dec/2025 11:29:52] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:29:59] "GET /logout/ HTTP/1.1" 302 0
+[09/Dec/2025 11:29:59] "GET /login/ HTTP/1.1" 200 2441
+[09/Dec/2025 11:30:01] "POST /login/ HTTP/1.1" 302 0
+[09/Dec/2025 11:30:02] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:30:09] "GET /usuarios/crear/ HTTP/1.1" 200 3073
+[09/Dec/2025 11:30:39] "POST /usuarios/crear/ HTTP/1.1" 200 3218
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 853, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '[usuario.id].username' from 'forms_dict[usuario.id].username'
+[09/Dec/2025 11:30:46] "GET /usuarios/editar/ HTTP/1.1" 500 214178
+Watching for file changes with StatReloader
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 853, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)' from 'forms_dict[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)'
+[09/Dec/2025 11:31:46] "GET /usuarios/editar/ HTTP/1.1" 500 216794
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 853, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)' from 'forms_dict[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)'
+[09/Dec/2025 11:31:52] "GET /usuarios/editar/ HTTP/1.1" 500 216657
+Watching for file changes with StatReloader
+[09/Dec/2025 11:32:10] "GET / HTTP/1.1" 200 4632
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 853, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)' from 'forms_dict[usuario.id].fields.username.widget.render('username', forms_dict[usuario.id].instance.username)'
+[09/Dec/2025 11:32:14] "GET /usuarios/editar/ HTTP/1.1" 500 216642
+Watching for file changes with StatReloader
+Not Found: /usuarios/
+[09/Dec/2025 11:33:53] "GET /usuarios/ HTTP/1.1" 404 3293
+/workspaces/prestaLabs/prestaLabs/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:33:23
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/prestaLabs/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:34:36
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:34:53] "GET / HTTP/1.1" 200 4632
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 853, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 852, in do_for
+    sequence = parser.compile_filter(bits[in_index + 1])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 703, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '[usuario.id]' from 'forms_dict[usuario.id]'
+[09/Dec/2025 11:34:56] "GET /usuarios/editar/ HTTP/1.1" 500 218971
+Watching for file changes with StatReloader
+[09/Dec/2025 11:35:46] "GET / HTTP/1.1" 200 4632
+Internal Server Error: /usuarios/editar/
+Traceback (most recent call last):
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/core/views.py", line 54, in editar_usuarios
+    return render(request, 'usuarios/editar_usuarios.html', {'usuarios': usuarios, 'forms_dict': forms_dict})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 514, in parse
+    self.extend_nodelist(nodelist, compiled_result, token)
+  File "/workspaces/prestaLabs/venv/lib/python3.12/site-packages/django/template/base.py", line 531, in extend_nodelist
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: <ExtendsNode: extends 'base.html'> must be the first tag in the template.
+[09/Dec/2025 11:35:51] "GET /usuarios/editar/ HTTP/1.1" 500 149211
+Watching for file changes with StatReloader
+[09/Dec/2025 11:37:04] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:37:06] "GET /usuarios/editar/ HTTP/1.1" 200 2915
+[09/Dec/2025 11:37:10] "POST /usuarios/editar/ HTTP/1.1" 302 0
+[09/Dec/2025 11:37:10] "GET /usuarios/editar/ HTTP/1.1" 200 2915
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:36:52
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:38:33
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[09/Dec/2025 11:38:53] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:38:56] "GET /usuarios/editar/ HTTP/1.1" 200 3471
+[09/Dec/2025 11:39:00] "POST /usuarios/editar/?eliminar=3 HTTP/1.1" 302 0
+[09/Dec/2025 11:39:00] "GET /usuarios/editar/ HTTP/1.1" 200 2201
+[09/Dec/2025 11:39:03] "GET /usuarios/crear/ HTTP/1.1" 200 3073
+[09/Dec/2025 11:39:22] "POST /usuarios/crear/ HTTP/1.1" 200 3218
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:38:46
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[09/Dec/2025 11:40:38] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:40:41] "GET /usuarios/editar/ HTTP/1.1" 200 3471
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:40:32
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[09/Dec/2025 11:40:54] "GET / HTTP/1.1" 200 4632
+/workspaces/prestaLabs/core/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 09, 2025 - 11:40:43
+Django version 4.2.7, using settings 'prestaLabs.settings'
+Starting development server at http://0.0.0.0:5001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[09/Dec/2025 11:41:06] "GET / HTTP/1.1" 200 4632
+Watching for file changes with StatReloader
+[09/Dec/2025 11:41:32] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:41:34] "GET /usuarios/editar/ HTTP/1.1" 200 3472
+[09/Dec/2025 11:41:36] "POST /usuarios/editar/ HTTP/1.1" 302 0
+[09/Dec/2025 11:41:36] "GET /usuarios/editar/?mensaje=editado HTTP/1.1" 200 3543
+[09/Dec/2025 11:41:39] "GET /usuarios/crear/ HTTP/1.1" 200 3160
+[09/Dec/2025 11:42:00] "POST /usuarios/crear/ HTTP/1.1" 302 0
+[09/Dec/2025 11:42:00] "GET /usuarios/editar/?mensaje=creado HTTP/1.1" 200 4814
+[09/Dec/2025 11:42:31] "GET /usuarios/editar/ HTTP/1.1" 200 4744
+[09/Dec/2025 11:42:34] "GET /usuarios/crear/ HTTP/1.1" 200 3243
+[09/Dec/2025 11:43:57] "GET /usuarios/editar/ HTTP/1.1" 200 4744
+[09/Dec/2025 11:44:06] "GET /usuarios/editar/ HTTP/1.1" 200 4744
+[09/Dec/2025 11:44:13] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:44:17] "GET /usuarios/editar/ HTTP/1.1" 200 4744
+[09/Dec/2025 11:44:21] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 11:44:25] "GET /usuarios/crear/ HTTP/1.1" 200 3243
+[09/Dec/2025 11:44:31] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 12:12:03] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 12:12:03] "GET / HTTP/1.1" 200 4632
+[09/Dec/2025 12:12:54] "GET /? HTTP/1.1" 200 4632
+[09/Dec/2025 12:13:01] "GET /? HTTP/1.1" 200 4632

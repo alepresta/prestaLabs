@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load dict_get %}
+{% block title %}Editar Usuarios | PrestaLabs{% endblock %}
+{% block content %}
+<h2>Editar usuarios</h2>
+{% if mensaje == 'creado' %}
+<div class="alert alert-success">Usuario creado correctamente.</div>
+{% elif mensaje == 'editado' %}
+<div class="alert alert-success">Usuario editado correctamente.</div>
+{% elif mensaje == 'eliminado' %}
+<div class="alert alert-success">Usuario eliminado correctamente.</div>
+{% endif %}
+<a href="/usuarios/crear/" class="btn btn-success mb-3">Crear usuario</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Activo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                {% with form=forms_dict|dict_get:usuario.id %}
+                <td>{{ form.username }}</td>
+                <td>{{ form.email }}</td>
+                <td>{{ form.is_active }}</td>
+                <td>
+                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                </td>
+                {% endwith %}
+            </form>
+            <form method="post" action="/usuarios/editar/?eliminar={{ usuario.id }}" style="display:inline;">
+                {% csrf_token %}
+                <td>
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</button>
+                </td>
+            </form>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

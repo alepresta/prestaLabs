@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | PrestaLabs{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-primary text-white">Análisis de Accesibilidad</div>
+      <div class="card-body">
+        <h5 class="card-title">Usuario: {{ user.username }}</h5>
+        <p class="card-text">Herramienta para analizar la accesibilidad de sitios web.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-success text-white">Análisis de Dominio Completo</div>
+      <div class="card-body">
+        <form>
+          <div class="mb-2">
+            <label for="dominio" class="form-label">Dominio</label>
+            <input type="text" class="form-control" id="dominio" placeholder="Ej: ejemplo.com">
+          </div>
+          <div class="mb-2">
+            <label for="maxPaginas" class="form-label">Máx. Páginas</label>
+            <input type="number" class="form-control" id="maxPaginas" value="100">
+          </div>
+          <div class="mb-2">
+            <label for="concurrencia" class="form-label">Concurrencia</label>
+            <input type="number" class="form-control" id="concurrencia" value="5">
+          </div>
+          <button type="submit" class="btn btn-success">Iniciar Análisis</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-info text-white">Análisis de URL Específica</div>
+      <div class="card-body">
+        <form>
+          <div class="mb-2">
+            <label for="urlAnalizar" class="form-label">URL a Analizar</label>
+            <input type="text" class="form-control" id="urlAnalizar" placeholder="Ej: https://sitio.com/pagina">
+          </div>
+          <div class="mb-2">
+            <label for="tipoAnalisis" class="form-label">Tipo de Análisis</label>
+            <select class="form-select" id="tipoAnalisis">
+              <option value="accesibilidad">Accesibilidad</option>
+              <option value="seo">SEO</option>
+              <option value="performance">Performance</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-info">Analizar URL</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-header bg-warning text-dark">Análisis en Proceso</div>
+      <div class="card-body">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>URL:</strong> https://qa2-back.argentina.gob.ar/normativa/busqueda-avanzada<br>
+            <strong>Estado:</strong> En proceso<br>
+            <strong>Iniciado:</strong> 12:53:44
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

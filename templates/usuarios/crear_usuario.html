@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Crear usuario de solo vista{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card mt-4">
+      <div class="card-header bg-success text-white">Crear usuario de solo vista</div>
+      <div class="card-body">
+        {% if mensaje %}
+          <div class="alert alert-info">{{ mensaje }}</div>
+        {% endif %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-success w-100">Crear usuario</button>
+        </form>
+        <a href="/usuarios/editar/" class="btn btn-secondary mt-3">Volver al listado</a>
+      </div>
+    </div>
+    <div class="mt-4">
+      <h5>Usuarios de solo vista existentes:</h5>
+      <ul class="list-group">
+        {% for usuario in usuarios %}
+          <li class="list-group-item">{{ usuario.username }} ({{ usuario.email }})</li>
+        {% empty %}
+          <li class="list-group-item">No hay usuarios de solo vista.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

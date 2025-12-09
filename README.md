@@ -43,6 +43,7 @@ chmod +x install.sh
 | borrar_cache    | Eliminar caché (__pycache__) de Python            |
 | actualizar      | Actualizar código con git pull origin main        |
 | ayuda           | Mostrar ayuda y comandos disponibles              |
+| usuario_lectura | Crear usuario de solo vista (lectura, sin acceso admin) |
 
 #### Ejemplos de uso de comandos
 
@@ -85,6 +86,9 @@ chmod +x install.sh
 
 # Mostrar ayuda
 ./install.sh ayuda
+
+# Crear usuario de solo vista (lectura)
+./install.sh usuario_lectura
 ```
 
 
@@ -92,6 +96,7 @@ Instalación completa con un solo comando (incluye iniciar/reiniciar el servidor
 ```bash
 ./install.sh todo
 ```
+Esto instalará todo y levantará el dashboard en el puerto 5001, con el superusuario creado automáticamente.
 
 Para tareas en segundo plano:
 ```bash
@@ -157,19 +162,27 @@ python manage.py migrate
 ```
 
 ### 6. Crear superusuario (opcional)
+Al ejecutar `./install.sh superusuario` por primera vez, se te pedirá la contraseña para el usuario administrador. No queda guardada en ningún archivo.
+
+### Crear usuarios solo vista (lectura)
+Puedes crear usuarios de solo vista ejecutando:
 ```bash
-python manage.py createsuperuser
+./install.sh usuario_lectura
 ```
+Se te pedirá el nombre de usuario, email y contraseña por consola. Estos usuarios solo podrán ver el dashboard y no podrán editar ni acceder al panel de administración.
 
 ### 7. Iniciar el servidor de desarrollo
 ```bash
-python manage.py runserver
+python manage.py runserver 0.0.0.0:5001
 ```
 
 ### 8. Probar la API y vistas
-- Accede a `http://localhost:8000/` para la vista principal.
-- Accede a `http://localhost:8000/status/` para el estado de la API.
-- Accede a `http://localhost:8000/admin/` para el panel de administración.
+- Accede a `http://localhost:5001/` para el dashboard principal.
+  - Usuario por defecto: **usuario_demo**
+  - Email: **demo@ejemplo.com**
+  - Password: **Demo123!**
+- Accede a `http://localhost:5001/status/` para el estado de la API.
+- Accede a `http://localhost:5001/admin/` para el panel de administración.
 
 ### 9. Ejecutar pruebas automáticas
 ```bash
