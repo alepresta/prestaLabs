@@ -1,3 +1,13 @@
+function reiniciar_servidor() {
+    pkill -f "manage.py runserver" || true
+    echo "Servidor Django detenido. Reiniciando..."
+    activar_entorno
+    nohup python manage.py runserver 0.0.0.0:8000 &
+    echo "Servidor Django iniciado en segundo plano."
+}
+    reiniciar_servidor)
+        reiniciar_servidor
+        ;;
 function instalar_todo() {
     crear_entorno
     instalar_dependencias
@@ -5,7 +15,8 @@ function instalar_todo() {
     migrar_db
     crear_superusuario
     recolectar_estaticos
-    echo "\nInstalación completa. Puedes iniciar el servidor con ./install.sh servidor"
+    reiniciar_servidor
+    echo "\nInstalación completa y servidor iniciado."
 }
 #!/bin/bash
 # Script de instalación y gestión para PrestaLabs

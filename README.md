@@ -33,6 +33,9 @@ chmod +x install.sh
 | migrar          | Ejecutar migraciones de la base de datos          |
 | superusuario    | Crear superusuario de Django                      |
 | servidor        | Iniciar servidor de desarrollo Django             |
+| reiniciar_servidor | Reiniciar el servidor Django en segundo plano  |
+# Reiniciar el servidor de desarrollo
+./install.sh reiniciar_servidor
 | celery          | Iniciar worker de Celery                          |
 | cerrar          | Desactivar entorno virtual                        |
 | redis           | Instalar y ejecutar Redis                         |
@@ -85,7 +88,7 @@ chmod +x install.sh
 ```
 
 
-Instalación completa con un solo comando:
+Instalación completa con un solo comando (incluye iniciar/reiniciar el servidor):
 ```bash
 ./install.sh todo
 ```
@@ -119,8 +122,6 @@ venv\Scripts\activate
 ### 3. Instalar dependencias
 ```bash
 pip install -r requirements.txt
-# Si ves un error relacionado a 'whitenoise', asegúrate de instalarlo:
-pip install whitenoise
 ```
 
 ### 4. Configurar variables de entorno
