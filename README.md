@@ -119,6 +119,8 @@ venv\Scripts\activate
 ### 3. Instalar dependencias
 ```bash
 pip install -r requirements.txt
+# Si ves un error relacionado a 'whitenoise', asegúrate de instalarlo:
+pip install whitenoise
 ```
 
 ### 4. Configurar variables de entorno
