@@ -138,6 +138,8 @@ function instalar_redis() {
 
 function recolectar_estaticos() {
     activar_entorno
+    # Restaurar archivos eliminados en static/ antes de recolectar
+    git checkout static/
     python manage.py collectstatic
 }
 
@@ -153,7 +155,8 @@ function borrar_cache() {
         rm -rf static/*
         echo "Carpeta static/ limpiada."
     fi
-    # Recolectar archivos estáticos nuevamente
+    # Restaurar archivos eliminados en static/ antes de recolectar
+    git checkout static/
     python manage.py collectstatic --noinput
     echo "Caché de Django y archivos estáticos eliminados y regenerados."
     # Reiniciar el servidor para asegurar que tome los cambios
