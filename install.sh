@@ -143,14 +143,23 @@ function recolectar_estaticos() {
 
 function borrar_cache() {
     activar_entorno
-    echo "Borrando caché de Django y archivos __pycache__..."
+    echo "Borrando caché de Django, archivos __pycache__ y estáticos..."
     # Limpiar caché de Django (si está configurado)
     python manage.py shell -c "from django.core.cache import cache; cache.clear()"
     # Eliminar caché de archivos Python
     find . -type d -name '__pycache__' -exec rm -rf {} +
-    # Recolectar archivos estáticos
+    # Eliminar archivos estáticos generados previamente
+    if [ -d static ]; then
+        rm -rf static/*
+        echo "Carpeta static/ limpiada."
+    fi
+    # Recolectar archivos estáticos nuevamente
     python manage.py collectstatic --noinput
-    echo "Caché de Django y archivos estáticos eliminados."
+    echo "Caché de Django y archivos estáticos eliminados y regenerados."
+    # Reiniciar el servidor para asegurar que tome los cambios
+    pkill -f "manage.py runserver" || true
+    nohup python manage.py runserver 0.0.0.0:5001 &
+    echo "Servidor Django reiniciado."
     echo "Recuerda hacer un hard refresh (Ctrl+F5) en tu navegador para limpiar la caché local."
 }
 
