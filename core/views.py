@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
@@ -79,15 +79,6 @@ class EditarUsuariosView(View):
 
     def get(self, request):
         usuarios = User.objects.filter(is_superuser=False)
-        eliminar_id = request.GET.get("eliminar")
-        if eliminar_id:
-            usuario_a_eliminar = User.objects.filter(
-                id=eliminar_id, is_superuser=False
-            ).first()
-            if usuario_a_eliminar:
-                usuario_a_eliminar.delete()
-                messages.success(request, "Usuario eliminado correctamente.")
-                return redirect("/usuarios/editar/")
         forms_dict = {u.id: EditarUsuarioForm(instance=u) for u in usuarios}
         return render(
             request,
@@ -97,13 +88,23 @@ class EditarUsuariosView(View):
 
     def post(self, request):
         usuarios = User.objects.filter(is_superuser=False)
+        eliminar_id = request.POST.get("eliminar_id")
+        if eliminar_id:
+            usuario_a_eliminar = User.objects.filter(
+                id=eliminar_id, is_superuser=False
+            ).first()
+            if usuario_a_eliminar:
+                usuario_a_eliminar.delete()
+                messages.success(request, "Usuario eliminado correctamente.")
+                return redirect("/usuarios/editar/")
         user_id = request.POST.get("user_id")
-        usuario = get_object_or_404(User, id=user_id)
-        form = EditarUsuarioForm(request.POST, instance=usuario)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Usuario editado correctamente.")
-            return redirect("/usuarios/editar/")
+        if user_id:
+            usuario = get_object_or_404(User, id=user_id)
+            form = EditarUsuarioForm(request.POST, instance=usuario)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Usuario editado correctamente.")
+                return redirect("/usuarios/editar/")
         forms_dict = {u.id: EditarUsuarioForm(instance=u) for u in usuarios}
         return render(
             request,
@@ -112,11 +113,12 @@ class EditarUsuariosView(View):
         )
 
 
-@login_required(login_url="/login/")
 def index(request):
     """
     Vista principal: dashboard (requiere login)
     """
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
     return render(request, "dashboard.html")
 
 

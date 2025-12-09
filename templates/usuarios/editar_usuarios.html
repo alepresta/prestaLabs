@@ -17,24 +17,33 @@
     <tbody>
         {% for usuario in usuarios %}
         <tr>
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                {% with form=forms_dict|dict_get:usuario.id %}
-                <td>{{ form.username }}</td>
-                <td>{{ form.email }}</td>
-                <td>{{ form.is_active }}</td>
-                <td>
+            <td>
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    {% with form=forms_dict|dict_get:usuario.id %}
+                        {{ form.username }}
+                    {% endwith %}
+            </td>
+            <td>
+                    {% with form=forms_dict|dict_get:usuario.id %}
+                        {{ form.email }}
+                    {% endwith %}
+            </td>
+            <td>
+                    {% with form=forms_dict|dict_get:usuario.id %}
+                        {{ form.is_active }}
+                    {% endwith %}
+            </td>
+            <td>
                     <input type="hidden" name="user_id" value="{{ usuario.id }}">
                     <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-                </td>
-                {% endwith %}
-            </form>
-            <form method="post" action="/usuarios/editar/?eliminar={{ usuario.id }}" style="display:inline;">
-                {% csrf_token %}
-                <td>
+                </form>
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="eliminar_id" value="{{ usuario.id }}">
                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</button>
-                </td>
-            </form>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

@@ -1,0 +1,105 @@
+/* Sistema de diseño institucional PrestaLabs */
+
+:root {
+    --color-azul: #0d6efd;
+    --color-azul-tecnico: #242C4F;
+    --color-amarillo: #FFD600;
+    --gris-claro: #F8F9FA;
+    --gris-medio: #E9ECEF;
+    --gris: #ADB5BD;
+    --gris-oscuro: #6C757D;
+    --gris-muy-oscuro: #343A40;
+    --font-family: 'Montserrat', 'Segoe UI', 'Arial', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--color-azul-tecnico);
+    background: var(--gris-claro);
+}
+
+.navbar {
+    background: var(--color-azul);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-bottom: 4px solid var(--color-amarillo);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    font-size: 1.1rem;
+    color: #fff !important;
+    margin-right: 10px;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: var(--color-amarillo);
+    color: var(--color-azul-tecnico) !important;
+}
+
+.nav-item {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.card-header {
+    background: var(--color-azul-tecnico);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(36,44,79,0.08);
+    background: #fff;
+}
+
+.card-destacada {
+    background: var(--color-azul-tecnico);
+    color: #fff;
+}
+
+.btn-primary {
+    background: var(--color-azul);
+    border: none;
+    font-weight: 700;
+}
+
+.btn-success {
+    background: var(--color-amarillo);
+    color: var(--color-azul-tecnico);
+    border: none;
+    font-weight: 700;
+}
+
+.footer {
+    background: var(--color-azul-tecnico);
+    color: #fff;
+    padding: 2rem 0 1rem 0;
+    text-align: center;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family);
+    font-weight: 700;
+    color: var(--color-azul-tecnico);
+}
+
+.text-gris {
+    color: var(--gris-oscuro);
+}
+
+/* Accesibilidad: alto contraste para texto sobre fondo oscuro */
+.card-header, .footer {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
