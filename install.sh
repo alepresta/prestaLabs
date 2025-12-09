@@ -148,12 +148,24 @@ function borrar_cache() {
 }
 
 function actualizar_codigo() {
+    # Eliminar logs de nohup antes de actualizar código para evitar conflictos de git
+    if [ -f nohup.out ]; then
+        echo "Eliminando nohup.out para evitar conflictos de git..."
+        rm nohup.out
+    fi
+
     echo "Actualizando código desde origin/main..."
     git pull origin main
     echo "Código actualizado."
 }
 
 function instalar_todo() {
+    # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
+    if [ -f nohup.out ]; then
+        echo "Eliminando nohup.out para evitar conflictos de git..."
+        rm nohup.out
+    fi
+
     echo "Actualizando código desde origin/main..."
     git pull origin main
     crear_entorno
