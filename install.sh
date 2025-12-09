@@ -1,3 +1,24 @@
+function instalar_todo() {
+    crear_entorno
+    instalar_dependencias
+    copiar_env
+    migrar_db
+    crear_superusuario
+    recolectar_estaticos
+    echo "\nInstalación completa. Puedes iniciar el servidor con ./install.sh servidor"
+}
+    todo)
+        instalar_todo
+        ;;
+
+#!/bin/bash
+# Script de instalación y gestión para PrestaLabs
+# Uso: ./install.sh [opción]
+
+set -e
+
+PROYECTO="prestaLabs"
+VENV="venv"
 function borrar_cache() {
     echo "Borrando caché (__pycache__)..."
     find . -type d -name '__pycache__' -exec rm -rf {} +
@@ -9,20 +30,6 @@ function actualizar_codigo() {
     git pull origin main
     echo "Código actualizado."
 }
-    borrar_cache)
-        borrar_cache
-        ;;
-    actualizar)
-        actualizar_codigo
-        ;;
-#!/bin/bash
-# Script de instalación y gestión para PrestaLabs
-# Uso: ./install.sh [opción]
-
-set -e
-
-PROYECTO="prestaLabs"
-VENV="venv"
 
 function crear_entorno() {
     echo "Creando entorno virtual..."
@@ -137,6 +144,12 @@ case "$1" in
         ;;
     estaticos)
         recolectar_estaticos
+        ;;
+    borrar_cache)
+        borrar_cache
+        ;;
+    actualizar)
+        actualizar_codigo
         ;;
     ayuda|*)
         ayuda

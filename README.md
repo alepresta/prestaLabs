@@ -1,3 +1,9 @@
+| todo            | Ejecuta todos los pasos de instalación            |
+#### Instalación completa con un solo comando
+
+```bash
+./install.sh todo
+```
 # PrestaLabs
 
 ## Descripción
@@ -18,6 +24,7 @@ chmod +x install.sh
 
 ### Comandos disponibles en install.sh
 
+
 | Comando         | Descripción                                      |
 |-----------------|--------------------------------------------------|
 | entorno         | Crear y activar entorno virtual                   |
@@ -34,14 +41,53 @@ chmod +x install.sh
 | actualizar      | Actualizar código con git pull origin main        |
 | ayuda           | Mostrar ayuda y comandos disponibles              |
 
-Ejemplo de instalación completa:
+#### Ejemplos de uso de comandos
+
 ```bash
+# Crear y activar entorno virtual
 ./install.sh entorno
+
+# Instalar dependencias
 ./install.sh dependencias
+
+# Copiar archivo .env de ejemplo
 ./install.sh env
+
+# Ejecutar migraciones
 ./install.sh migrar
-./install.sh superusuario  # Opcional
+
+# Crear superusuario
+./install.sh superusuario
+
+# Iniciar servidor de desarrollo
 ./install.sh servidor
+
+# Iniciar worker de Celery
+./install.sh celery
+
+# Desactivar entorno virtual
+./install.sh cerrar
+
+# Instalar y ejecutar Redis
+./install.sh redis
+
+# Recolectar archivos estáticos
+./install.sh estaticos
+
+# Eliminar caché (__pycache__)
+./install.sh borrar_cache
+
+# Actualizar código desde origin/main
+./install.sh actualizar
+
+# Mostrar ayuda
+./install.sh ayuda
+```
+
+
+Instalación completa con un solo comando:
+```bash
+./install.sh todo
 ```
 
 Para tareas en segundo plano:
