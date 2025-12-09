@@ -150,10 +150,10 @@ function borrar_cache() {
     python manage.py shell -c "from django.core.cache import cache; cache.clear()"
     # Eliminar caché de archivos Python
     find . -type d -name '__pycache__' -exec rm -rf {} +
-    # Eliminar archivos estáticos generados previamente
-    if [ -d static ]; then
-        rm -rf static/*
-        echo "Carpeta static/ limpiada."
+    # Eliminar archivos estáticos generados previamente en staticfiles, no en static
+    if [ -d staticfiles ]; then
+        rm -rf staticfiles/*
+        echo "Carpeta staticfiles/ limpiada."
     fi
     # Restaurar archivos eliminados en static/ antes de recolectar
     git checkout static/
