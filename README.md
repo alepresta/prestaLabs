@@ -6,7 +6,51 @@ Proyecto Django para laboratorio de desarrollo.
 ## Instalación
 
 1. Clona el repositorio:
-## Instalación y uso completo
+
+## Instalación rápida con script
+
+Puedes usar el script `install.sh` para automatizar la instalación y gestión del proyecto en Linux:
+
+```bash
+chmod +x install.sh
+./install.sh ayuda
+```
+
+### Comandos disponibles en install.sh
+
+| Comando         | Descripción                                      |
+|-----------------|--------------------------------------------------|
+| entorno         | Crear y activar entorno virtual                   |
+| dependencias    | Instalar dependencias del proyecto                |
+| env             | Copiar archivo .env de ejemplo                    |
+| migrar          | Ejecutar migraciones de la base de datos          |
+| superusuario    | Crear superusuario de Django                      |
+| servidor        | Iniciar servidor de desarrollo Django             |
+| celery          | Iniciar worker de Celery                          |
+| cerrar          | Desactivar entorno virtual                        |
+| redis           | Instalar y ejecutar Redis                         |
+| estaticos       | Recolectar archivos estáticos para producción     |
+| borrar_cache    | Eliminar caché (__pycache__) de Python            |
+| actualizar      | Actualizar código con git pull origin main        |
+| ayuda           | Mostrar ayuda y comandos disponibles              |
+
+Ejemplo de instalación completa:
+```bash
+./install.sh entorno
+./install.sh dependencias
+./install.sh env
+./install.sh migrar
+./install.sh superusuario  # Opcional
+./install.sh servidor
+```
+
+Para tareas en segundo plano:
+```bash
+./install.sh redis
+./install.sh celery
+```
+
+---
 
 ### 1. Clonar el repositorio
 ```bash
