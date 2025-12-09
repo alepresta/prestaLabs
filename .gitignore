@@ -170,3 +170,6 @@ media/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Salida de procesos en background
+nohup.out
