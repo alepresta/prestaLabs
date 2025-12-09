@@ -20,11 +20,17 @@ else:
 EOF
 }
 function reiniciar_servidor() {
+    # Buscar y matar cualquier proceso en el puerto 5001
+    PID=$(lsof -ti:5001)
+    if [ ! -z "$PID" ]; then
+        echo "Matando proceso en puerto 5001 (PID: $PID)"
+        kill -9 $PID
+    fi
     pkill -f "manage.py runserver" || true
-    echo "Servidor Django detenido. Reiniciando..."
+    echo "Servidor Django detenido. Reiniciando en puerto 5001..."
     activar_entorno
-    nohup python manage.py runserver 0.0.0.0:8000 &
-    echo "Servidor Django iniciado en segundo plano."
+    nohup python manage.py runserver 0.0.0.0:5001 &
+    echo "Servidor Django iniciado en segundo plano en puerto 5001."
 }
 
 #!/bin/bash
