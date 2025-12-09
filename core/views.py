@@ -1,3 +1,11 @@
+from django.contrib.auth import authenticate
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+# Redirige /dashboard a login si no está autenticado, o al index si sí
+def dashboard_redirect(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('login'))
+    return redirect('index')
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django import forms
