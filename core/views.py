@@ -6,10 +6,26 @@ from django.http import HttpResponseRedirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .forms import UsuarioLecturaForm, EditarUsuarioForm
+
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib import messages
+from .forms import UsuarioLecturaForm, EditarUsuarioForm
+
+
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
+class ListarUsuariosView(View):
+    """
+    CBV para listar todos los usuarios (solo admin)
+    """
+
+    def get(self, request):
+        usuarios = User.objects.filter(is_superuser=False)
+        return render(
+            request,
+            "usuarios/listar_usuarios.html",
+            {"usuarios": usuarios},
+        )
 
 
 def dashboard_redirect(request):

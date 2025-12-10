@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Usuarios | PrestaLabs{% endblock %}
+{% block content %}
+<h2 class="mb-4">Gestión de Usuarios</h2>
+<a href="/usuarios/crear/" class="btn btn-success mb-3">Crear usuario</a>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Fecha de Creación</th>
+            <th>Último Acceso</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.username }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.date_joined|date:'d/m/Y H:i' }}</td>
+            <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
+            <td>
+                <a href="/usuarios/editar/?id={{ usuario.id }}" class="btn btn-primary btn-sm">Editar</a>
+                <form method="post" action="/usuarios/eliminar/" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
