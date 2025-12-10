@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Análisis de URL Específica | PrestaLab{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Análisis de URL Específica</h2>
+    <form method="post" action="" class="mb-4">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="url" class="form-label">URL a analizar</label>
+            <input type="text" class="form-control" id="url" name="url" placeholder="Ej: https://ejemplo.com/pagina" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Analizar URL</button>
+    </form>
+    {% if resultado %}
+    <div class="alert alert-info">
+        <h5>Resultado del análisis:</h5>
+        <pre>{{ resultado }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
