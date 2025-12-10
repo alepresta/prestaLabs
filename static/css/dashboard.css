@@ -25,9 +25,9 @@ body {
 }
 
 .navbar {
-    background: var(--color-azul);
+    background: linear-gradient(90deg, var(--color-azul-tecnico) 85%, var(--color-azul) 100%);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-bottom: 4px solid var(--color-amarillo);
+    border-bottom: 2px solid var(--color-amarillo);
 }
 
 .navbar-brand {
