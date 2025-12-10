@@ -1,15 +1,89 @@
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/dashboard/">PrestaLab</a>
+    <a class="navbar-brand" href="/">
+      <i class="fas fa-chart-network"></i> WebAnalyzer
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="/logout/">Cerrar sesión</a>
+          <a class="nav-link" href="/usuarios/editar/">
+            <i class="fas fa-users-cog"></i> Gestión de Usuarios
+            <span class="badge bg-admin">Admin</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/analisis/dominio/">
+            <i class="fas fa-globe"></i> Análisis de Dominio Completo
+            <span class="badge bg-pro">Pro</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/analisis/url/">
+            <i class="fas fa-search"></i> Análisis de URL Específica
+            <span class="badge bg-seo">SEO</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/reportes/">
+            <i class="fas fa-chart-bar"></i> Reportes y Estadísticas
+            <span class="badge bg-data">Data</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/configuracion/">
+            <i class="fas fa-cog"></i> Configuración del Sistema
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/documentacion/">
+            <i class="fas fa-question-circle"></i> Documentación y Ayuda
+          </a>
         </li>
       </ul>
+      <div class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle"></i> Usuario
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="/usuarios/editar/"><i class="fas fa-user"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+      </div>
     </div>
   </div>
 </nav>
+
+<style>
+  .badge {
+    font-size: 0.6em;
+    padding: 0.25em 0.5em;
+    margin-left: 0.5em;
+    vertical-align: middle;
+  }
+  .bg-admin {
+    background-color: #dc3545 !important;
+  }
+  .bg-pro {
+    background-color: #007bff !important;
+  }
+  .bg-seo {
+    background-color: #28a745 !important;
+  }
+  .bg-data {
+    background-color: #6f42c1 !important;
+  }
+  .navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+  }
+  .navbar-nav .nav-link i {
+    margin-right: 0.5em;
+    min-width: 1.5em;
+  }
+</style>
