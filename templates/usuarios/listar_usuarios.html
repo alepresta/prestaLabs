@@ -21,9 +21,9 @@
             <td>{{ usuario.email }}</td>
             <td>
                 {% if usuario.is_staff %}
-                    <span class="badge bg-primary">Admin</span>
+                    <span class="badge" style="background:var(--color-azul-tecnico);color:#fff;font-weight:600;">Admin</span>
                 {% else %}
-                    <span class="badge bg-secondary">Lectura</span>
+                    <span class="badge" style="background:var(--color-amarillo);color:var(--color-azul-tecnico);font-weight:600;">Lectura</span>
                 {% endif %}
             </td>
             <td>{{ usuario.date_joined|date:'d/m/Y H:i' }}</td>
