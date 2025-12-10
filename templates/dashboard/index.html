@@ -8,49 +8,7 @@
 
 {% block content %}
 <div class="container py-5">
-    <!-- Encabezado del Dashboard -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-12 text-center">
-            <h2><i class="fas fa-tachometer-alt me-3"></i>Dashboard de PrestaLab</h2>
-            <p class="text-gris">
-                {% if user.is_authenticated %}
-                    Bienvenido, <strong>{{ user.get_full_name|default:user.username }}</strong>
-                {% else %}
-                    Panel de Control de Análisis Web
-                {% endif %}
-            </p>
-        </div>
-    </div>
 
-    <!-- Menú de Acceso Rápido -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-10">
-            <div class="dashboard-menu mx-auto">
-                <a href="/usuarios/editar/" class="dashboard-link">
-                    <i class="fas fa-users me-2"></i>Gestión de Usuarios
-                    <span class="badge bg-primary float-end">Admin</span>
-                </a>
-                <a href="/analisis/dominio/" class="dashboard-link">
-                    <i class="fas fa-sitemap me-2"></i>Análisis de Dominio Completo
-                    <span class="badge bg-success float-end">Pro</span>
-                </a>
-                <a href="/analisis/url/" class="dashboard-link">
-                    <i class="fas fa-link me-2"></i>Análisis de URL Específica
-                    <span class="badge bg-warning float-end">SEO</span>
-                </a>
-                <a href="/reportes/" class="dashboard-link">
-                    <i class="fas fa-chart-bar me-2"></i>Reportes y Estadísticas
-                    <span class="badge bg-info float-end">Data</span>
-                </a>
-                <a href="/configuracion/" class="dashboard-link">
-                    <i class="fas fa-cogs me-2"></i>Configuración del Sistema
-                </a>
-                <a href="/documentacion/" class="dashboard-link">
-                    <i class="fas fa-book me-2"></i>Documentación y Ayuda
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Tarjetas de Módulos Principales -->
     <div class="row">
