@@ -1,0 +1,12 @@
+{% extends "base/base.html" %}
+{% block title %}Cerrar sesión | PrestaLab{% endblock %}
+{% block content %}
+<div class="container mt-4 text-center">
+    <h2>¿Deseas cerrar sesión?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Cerrar sesión</button>
+        <a href="/dashboard/" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

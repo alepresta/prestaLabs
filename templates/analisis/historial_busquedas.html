@@ -1,0 +1,28 @@
+{% extends "base/base.html" %}
+{% block content %}
+<h2>Historial de búsquedas de dominios</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Dominio</th>
+            <th>Usuario</th>
+            <th>Fecha y hora</th>
+            <th>URLs encontradas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in busquedas %}
+        <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.dominio }}</td>
+            <td>{% if b.usuario %}{{ b.usuario.username }}{% else %}<i>Desconocido</i>{% endif %}</td>
+            <td>{{ b.fecha|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ b.get_urls|length }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No hay búsquedas registradas.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

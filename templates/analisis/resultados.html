@@ -1,0 +1,29 @@
+{% extends "base/base.html" %}
+{% block title %}Resultados de Análisis | PrestaLab{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Resultados del Análisis</h2>
+    {% if resultados %}
+        <table class="table table-striped table-responsive">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Estado</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in resultados %}
+                <tr>
+                    <td>{{ r.url }}</td>
+                    <td>{{ r.estado }}</td>
+                    <td>{{ r.detalles }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No hay resultados para mostrar.</div>
+    {% endif %}
+</div>
+{% endblock %}

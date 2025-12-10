@@ -15,8 +15,11 @@
 
 <h4>Dominios buscados</h4>
 <ul class="list-group mb-4">
-	{% for dominio in dominios %}
-		<li class="list-group-item">{{ dominio }} <a href="/analisis/detalle/?dominio={{ dominio }}" class="btn btn-sm btn-outline-info float-end">Ver URLs</a></li>
+	{% for d in dominios_tabla %}
+		<li class="list-group-item">
+			{{ d.dominio }}
+			<a href="/analisis/detalle/?dominio={{ d.dominio }}" class="btn btn-sm btn-outline-info float-end">Ver URLs</a>
+		</li>
 	{% empty %}
 		<li class="list-group-item">No se han buscado dominios aún.</li>
 	{% endfor %}
