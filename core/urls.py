@@ -7,8 +7,6 @@ from .views import (
     EditarUsuariosView,
     ListarUsuariosView,
     ExportarUsuariosView,
-    AnalisisDominioView,
-    AnalisisUrlView,
 )
 
 urlpatterns = [
@@ -35,6 +33,4 @@ urlpatterns = [
         name="exportar_usuarios",
     ),
     path("dashboard/", dashboard_redirect, name="dashboard"),
-    path("analisis/dominio/", AnalisisDominioView.as_view(), name="analisis_dominio"),
-    path("analisis/url/", AnalisisUrlView.as_view(), name="analisis_url"),
 ]

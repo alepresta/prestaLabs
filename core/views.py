@@ -1,14 +1,41 @@
-from django.views import View
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from django.utils.decorators import method_decorator
-from django.contrib import messages
-from .forms import EditarUsuarioForm
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.contrib import messages
+from .forms import UsuarioLecturaForm, EditarUsuarioForm
+
+
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
+class ListarUsuariosView(View):
+    """
+    CBV para listar todos los usuarios (solo admin)
+    """
+
+    def get(self, request):
+        usuarios = User.objects.filter(is_superuser=False)
+        q = request.GET.get("q", "").strip().lower()
+        tipo = request.GET.get("tipo", "")
+        if q:
+            usuarios = usuarios.filter(username__icontains=q) | usuarios.filter(
+                email__icontains=q
+            )
+        if tipo == "admin":
+            usuarios = usuarios.filter(is_staff=True)
+        elif tipo == "lectura":
+            usuarios = usuarios.filter(is_staff=False)
+        return render(
+            request,
+            "usuarios/listar_usuarios.html",
+            {"usuarios": usuarios},
+        )
 
 
 def dashboard_redirect(request):
@@ -20,42 +47,53 @@ def dashboard_redirect(request):
     return redirect("index")
 
 
-class AnalisisUrlView(View):
-    template_name = "analisis_url.html"
+# Formulario para crear usuario de solo lectura
+
+
+# Solo admin puede acceder
+
+
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
+class CrearUsuarioLecturaView(View):
+    """
+    CBV para crear usuario de solo lectura (solo admin)
+    """
 
     def get(self, request):
-        return render(request, self.template_name)
-
-    def post(self, request):
-        url = request.POST.get("url")
-        # Aquí iría la lógica real de análisis de la URL
-        resultado = f"Análisis realizado para la URL: {url}\n[Simulación de resultado]"
+        form = UsuarioLecturaForm()
+        usuarios = User.objects.filter(is_staff=False, is_superuser=False)
         return render(
             request,
-            self.template_name,
-            {"resultado": resultado},
+            "usuarios/crear_usuario.html",
+            {"form": form, "usuarios": usuarios},
         )
-
-
-class AnalisisDominioView(View):
-    template_name = "analisis_dominio.html"
-
-    def get(self, request):
-        return render(request, self.template_name)
 
     def post(self, request):
-        dominio = request.POST.get("dominio")
-        max_paginas = request.POST.get("max_paginas")
-        concurrencia = request.POST.get("concurrencia")
-        # Aquí iría la lógica real de análisis y generación de sitemap
-        resultado = (
-            f"Sitemap generado para {dominio} "
-            f"(máx. páginas: {max_paginas}, concurrencia: {concurrencia})\n[Simulación de resultado]"
-        )
+        form = UsuarioLecturaForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            if not User.objects.filter(username=username).exists():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                )
+                user.is_staff = False
+                user.save()
+                messages.success(
+                    request,
+                    ("Usuario '" + str(username) + "' creado correctamente."),
+                )
+                return redirect("/usuarios/editar/")
+            else:
+                messages.error(request, f"El usuario '{username}' ya existe.")
+        usuarios = User.objects.filter(is_staff=False, is_superuser=False)
         return render(
             request,
-            self.template_name,
-            {"resultado": resultado},
+            "usuarios/crear_usuario.html",
+            {"form": form, "usuarios": usuarios},
         )
 
 
