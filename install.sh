@@ -1,11 +1,30 @@
+
+#!/bin/bash
+
+# Verificar que estamos en un proyecto Django
+if [ ! -f "manage.py" ]; then
+    echo "[ERROR] No se encontró manage.py. Asegúrate de estar en el directorio raíz del proyecto Django."
+    exit 1
+fi
+
+function activar_entorno() {
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+        echo "Entorno virtual activado."
+    else
+        echo "[ERROR] El entorno virtual no existe. Ejecuta './install.sh entorno' primero."
+        exit 1
+    fi
+}
+
 function crear_usuario_lectura() {
     activar_entorno
     echo "Ingrese el nombre de usuario de solo vista:"
-    read USERNAME
+    read -r USERNAME
     echo "Ingrese el email del usuario de solo vista:"
-    read EMAIL
+    read -r EMAIL
     echo "Ingrese la contraseña para $USERNAME:"
-    read -s PASSWORD
+    read -r -s PASSWORD
     python manage.py shell <<EOF
 from django.contrib.auth.models import User
 if not User.objects.filter(username='$USERNAME').exists():
@@ -25,7 +44,7 @@ function crear_superusuario() {
     EXISTE=$(python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$USERNAME').exists())")
     if [ "$EXISTE" = "False" ]; then
         echo "Ingrese la contraseña para el superusuario ($USERNAME):"
-        read -s PASSWORD
+        read -r -s PASSWORD
         python manage.py shell <<EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -47,23 +66,72 @@ function borrar_cache() {
         rm -rf staticfiles/*
         echo "Carpeta staticfiles/ limpiada."
     fi
-    git checkout static/
+    git checkout static/ 2>/dev/null || echo "No se pudo restaurar static/, continuando..."
     python manage.py collectstatic --noinput
     echo "Caché de Django y archivos estáticos eliminados y regenerados."
-    pkill -f "manage.py runserver" || true
-    nohup python manage.py runserver 0.0.0.0:5001 &
+    pkill -f "manage.py runserver" 2>/dev/null || true
+    nohup python manage.py runserver 0.0.0.0:5001 >/dev/null 2>&1 &
     echo "Servidor Django reiniciado."
     echo "Recuerda hacer un hard refresh (Ctrl+F5) en tu navegador para limpiar la caché local."
 }
 
+function instalar_herramientas_calidad() {
+    activar_entorno
+    pip install --upgrade pip
+    pip install pytest pytest-django factory-boy bandit pre-commit coverage
+    pre-commit install
+    echo "Herramientas de calidad y seguridad instaladas."
+}
+
+function iniciar_servidor() {
+    activar_entorno
+    echo "Iniciando servidor Django en puerto 5001..."
+    python manage.py runserver 0.0.0.0:5001
+}
+
+function iniciar_celery() {
+    activar_entorno
+    echo "Iniciando worker de Celery..."
+    if command -v celery >/dev/null 2>&1; then
+        celery -A prestaLabs worker --loglevel=info
+    else
+        echo "Celery no está instalado. Instálalo primero con: pip install celery"
+    fi
+}
+
+function cerrar_entorno() {
+    if [[ "$VIRTUAL_ENV" != "" ]]; then
+        deactivate
+        echo "Entorno virtual desactivado."
+    else
+        echo "No hay entorno virtual activo."
+    fi
+}
+
+function instalar_redis() {
+    echo "Instalando Redis..."
+    sudo apt update && sudo apt install -y redis-server
+    sudo service redis-server start
+    echo "Redis instalado y ejecutándose."
+}
+
+function actualizar_codigo() {
+    if [ -f nohup.out ]; then
+        echo "Eliminando nohup.out para evitar conflictos de git..."
+        rm nohup.out
+    fi
+    echo "Actualizando código desde origin/main..."
+    git pull origin main
+    echo "Código actualizado."
+}
+
 function instalar_todo() {
-    echo ""
-    echo "========== INICIO INSTALACIÓN COMPLETA =========="
+    echo -e "\n========== INICIO INSTALACIÓN COMPLETA =========="
     # Cerrar proceso en puerto 5001 si existe
-    PID=$(lsof -ti:5001)
-    if [ ! -z "$PID" ]; then
+    PID=$(lsof -ti:5001 2>/dev/null || true)
+    if [ ! -z "$PID" ] && [ "$PID" != "true" ]; then
         echo "Matando proceso en puerto 5001 (PID: $PID)"
-        kill -9 $PID
+        kill -9 $PID 2>/dev/null || true
     fi
     # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
     if [ -f nohup.out ]; then
@@ -92,11 +160,8 @@ function instalar_todo() {
     recolectar_estaticos
     echo "[INSTALAR] Borrando caché y reiniciando servidor..."
     borrar_cache
-    echo "[INSTALAR] Reiniciando servidor..."
-    reiniciar_servidor
-    echo "\n========== INSTALACIÓN COMPLETA =========="
+    echo -e "\n========== INSTALACIÓN COMPLETA =========="
     echo "Puedes cerrar la terminal, la app PrestaLabs seguirá corriendo en segundo plano."
-    ayuda
 }
 
 function ayuda() {
@@ -123,15 +188,7 @@ function ayuda() {
     echo "Ejemplo: ./install.sh entorno"
 }
 
-function activar_entorno() {
-    if [ -d "venv" ]; then
-        source venv/bin/activate
-        echo "Entorno virtual activado."
-    else
-        echo "[ERROR] El entorno virtual no existe. Ejecuta './install.sh entorno' primero."
-        exit 1
-    fi
-}
+
 
 function crear_entorno() {
     if [ ! -d "venv" ]; then
@@ -178,7 +235,7 @@ function recolectar_estaticos() {
 }
 
 function reiniciar_servidor() {
-    pkill -f "manage.py runserver" || true
+    pkill -f "manage.py runserver" 2>/dev/null || true
     echo "Servidor Django detenido. Reiniciando en puerto 5001..."
     activar_entorno
     nohup python manage.py runserver 0.0.0.0:5001 > nohup.out 2>&1 &
