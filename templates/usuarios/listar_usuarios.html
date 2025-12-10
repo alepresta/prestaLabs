@@ -2,6 +2,12 @@
 {% block title %}Gestión de Usuarios | PrestaLabs{% endblock %}
 {% block content %}
 <h2 class="mb-4">Gestión de Usuarios</h2>
+{% if user.is_staff %}
+<form method="post" action="/usuarios/exportar/" class="mb-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-secondary">Exportar usuarios</button>
+</form>
+{% endif %}
 <form method="get" class="row mb-3 g-2 align-items-center">
     <div class="col-auto">
         <input type="text" name="q" class="form-control" placeholder="Buscar usuario..." value="{{ request.GET.q|default:'' }}">
@@ -31,18 +37,6 @@
     </thead>
     <tbody>
         {% for usuario in usuarios %}
-        {% if request.GET.q %}
-            {% if usuario.username|lower contains request.GET.q|lower or usuario.email|lower contains request.GET.q|lower %}
-            {% else %}
-                {% continue %}
-            {% endif %}
-        {% endif %}
-        {% if request.GET.tipo == 'admin' and not usuario.is_staff %}
-            {% continue %}
-        {% endif %}
-        {% if request.GET.tipo == 'lectura' and usuario.is_staff %}
-            {% continue %}
-        {% endif %}
         <tr>
             <td>{{ usuario.username }}</td>
             <td>{{ usuario.email }}</td>

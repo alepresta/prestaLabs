@@ -21,6 +21,16 @@ class ListarUsuariosView(View):
 
     def get(self, request):
         usuarios = User.objects.filter(is_superuser=False)
+        q = request.GET.get("q", "").strip().lower()
+        tipo = request.GET.get("tipo", "")
+        if q:
+            usuarios = usuarios.filter(username__icontains=q) | usuarios.filter(
+                email__icontains=q
+            )
+        if tipo == "admin":
+            usuarios = usuarios.filter(is_staff=True)
+        elif tipo == "lectura":
+            usuarios = usuarios.filter(is_staff=False)
         return render(
             request,
             "usuarios/listar_usuarios.html",
@@ -127,6 +137,37 @@ class EditarUsuariosView(View):
             "usuarios/editar_usuarios.html",
             {"usuarios": usuarios, "forms_dict": forms_dict},
         )
+
+
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
+class ExportarUsuariosView(View):
+    """
+    Exporta los usuarios en formato CSV (solo admin)
+    """
+
+    def post(self, request):
+        import csv
+        from django.http import HttpResponse
+
+        usuarios = User.objects.filter(is_superuser=False)
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="usuarios.csv"'
+        writer = csv.writer(response)
+        writer.writerow(
+            ["Usuario", "Email", "Tipo", "Fecha de Creación", "Último Acceso"]
+        )
+        for u in usuarios:
+            tipo = "Admin" if u.is_staff else "Lectura"
+            writer.writerow(
+                [
+                    u.username,
+                    u.email,
+                    tipo,
+                    u.date_joined.strftime("%d/%m/%Y %H:%M"),
+                    u.last_login.strftime("%d/%m/%Y %H:%M") if u.last_login else "-",
+                ]
+            )
+        return response
 
 
 def index(request):
