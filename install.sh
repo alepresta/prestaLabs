@@ -15,73 +15,14 @@ function crear_usuario_lectura() {
     read EMAIL
     echo "Ingrese la contraseña para $USERNAME:"
     read -s PASSWORD
-    python manage.py shell <<EOF
-from django.contrib.auth.models import User
-if not User.objects.filter(username='$USERNAME').exists():
-    user = User.objects.create_user('$USERNAME', email='$EMAIL', password='$PASSWORD')
-    case "$1" in
-    calidad)
-        instalar_herramientas_calidad
-        ;;
-    entorno)
-        crear_entorno
-        ;;
-    dependencias)
-        instalar_dependencias
-        ;;
-    env)
-        copiar_env
-        ;;
-    migrar)
-        migrar_db
-        ;;
-    superusuario)
-        crear_superusuario
-        ;;
-    servidor)
-        iniciar_servidor
-        ;;
-    reiniciar_servidor)
-        reiniciar_servidor
-        ;;
-    celery)
-        iniciar_celery
-        ;;
-    cerrar)
-        cerrar_entorno
-        ;;
-    redis)
-        instalar_redis
-        ;;
-    estaticos)
-        recolectar_estaticos
-        ;;
-    borrar_cache)
-        borrar_cache
-        ;;
-    actualizar)
-        actualizar_codigo
-        ;;
-    usuario_lectura)
-        crear_usuario_lectura
-        ;;
-    integridad)
-        bash verificar_integridad.sh
-        ;;
-    todo)
-        instalar_todo
-        ;;
-    ayuda|*)
-        ayuda
-        ;;
-}
-
-function migrar_db() {
     activar_entorno
-    echo "Ejecutando migraciones..."
-    python manage.py migrate
-}
-
+    echo "Ingrese el nombre de usuario de solo vista:"
+    read USERNAME
+    echo "Ingrese el email del usuario de solo vista:"
+    read EMAIL
+    echo "Ingrese la contraseña para $USERNAME:"
+    read -s PASSWORD
+    python manage.py shell <<EOF
 function crear_superusuario() {
     activar_entorno
     USERNAME="usuario_demo"
