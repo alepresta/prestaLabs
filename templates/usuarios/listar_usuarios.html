@@ -8,6 +8,7 @@
         <tr>
             <th>Usuario</th>
             <th>Email</th>
+            <th>Tipo</th>
             <th>Fecha de Creación</th>
             <th>Último Acceso</th>
             <th>Acciones</th>
@@ -18,6 +19,13 @@
         <tr>
             <td>{{ usuario.username }}</td>
             <td>{{ usuario.email }}</td>
+            <td>
+                {% if usuario.is_staff %}
+                    <span class="badge bg-primary">Admin</span>
+                {% else %}
+                    <span class="badge bg-secondary">Lectura</span>
+                {% endif %}
+            </td>
             <td>{{ usuario.date_joined|date:'d/m/Y H:i' }}</td>
             <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
             <td>
