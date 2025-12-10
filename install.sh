@@ -178,7 +178,8 @@ function actualizar_codigo() {
 }
 
 function instalar_todo() {
-    echo "\n========== INICIO INSTALACIÓN COMPLETA =========="
+    echo ""
+    echo "========== INICIO INSTALACIÓN COMPLETA =========="
     # Cerrar proceso en puerto 5001 si existe
     PID=$(lsof -ti:5001)
     if [ ! -z "$PID" ]; then
