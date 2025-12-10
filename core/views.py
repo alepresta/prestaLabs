@@ -5,12 +5,17 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from .forms import UsuarioLecturaForm, EditarUsuarioForm
+
+
+def analisis_dominio(request):
+    """
+    Vista placeholder para análisis de dominio
+    """
+    return render(request, "analisis_dominio.html")
 
 
 @method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
