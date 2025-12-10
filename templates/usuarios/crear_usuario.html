@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 {% block title %}Crear usuario de solo vista{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
@@ -6,10 +7,36 @@
     <div class="card mt-4">
       <div class="card-header bg-success text-white">Crear usuario de solo vista</div>
       <div class="card-body">
-        {# Los mensajes ahora se muestran en base.html #}
+        {% if mensaje %}
+          <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {{ mensaje }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+        {% endif %}
         <form method="post">
           {% csrf_token %}
-          {{ form.as_p }}
+          <div class="mb-3">
+            {{ form.username.label_tag }}
+            {{ form.username|add_class:'form-control' }}
+            {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            {{ form.email.label_tag }}
+            {{ form.email|add_class:'form-control' }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            {{ form.password.label_tag }}
+            {{ form.password|add_class:'form-control' }}
+            {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="id_is_staff" class="form-label">Tipo de usuario</label>
+            <select name="is_staff" id="id_is_staff" class="form-select">
+              <option value="">Lectura</option>
+              <option value="on">Admin</option>
+            </select>
+          </div>
           <button type="submit" class="btn btn-success w-100">Crear usuario</button>
         </form>
         <a href="/usuarios/editar/" class="btn btn-secondary mt-3">Volver al listado</a>

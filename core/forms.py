@@ -27,3 +27,27 @@ class EditarUsuarioForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["username", "email", "is_active"]
+
+
+# Formulario para que un admin cambie la contraseña de cualquier usuario
+class AdminSetPasswordForm(forms.Form):
+    new_password1 = forms.CharField(
+        label="Nueva contraseña",
+        widget=forms.PasswordInput,
+        strip=False,
+        help_text="Ingrese la nueva contraseña.",
+    )
+    new_password2 = forms.CharField(
+        label="Confirmar nueva contraseña",
+        widget=forms.PasswordInput,
+        strip=False,
+        help_text="Repita la nueva contraseña.",
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get("new_password1")
+        p2 = cleaned_data.get("new_password2")
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        return cleaned_data

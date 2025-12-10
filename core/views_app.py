@@ -1,13 +1,44 @@
 import re
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from .forms import DominioForm
+from .forms import AdminSetPasswordForm, DominioForm
 from .models import BusquedaDominio
 
 
-from django.contrib.auth.models import User
+# Vista para que un admin cambie la contraseña de cualquier usuario
+def admin_set_password_view(request, user_id):
+    try:
+        usuario = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return render(
+            request,
+            "usuarios/cambiar_password.html",
+            {"error": "Usuario no encontrado."},
+        )
+
+    mensaje = ""
+    if request.method == "POST":
+        form = AdminSetPasswordForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data["new_password1"]
+            usuario.set_password(new_password)
+            usuario.save()
+            mensaje = f"Contraseña actualizada correctamente para {usuario.username}."
+            form = AdminSetPasswordForm()  # Limpiar formulario
+        else:
+            mensaje = "Corrija los errores indicados."
+    else:
+        form = AdminSetPasswordForm()
+
+    return render(
+        request,
+        "usuarios/cambiar_password.html",
+        {"form": form, "usuario": usuario, "mensaje": mensaje},
+    )
 
 
 # Vista para listar usuarios (al final del archivo)
@@ -218,16 +249,111 @@ def nuevo_reporte_view(request):
 
 def nuevo_usuario_view(request):
     """
-    Vista básica para crear un nuevo usuario
+    Vista para crear un nuevo usuario (admin o lectura)
     """
-    return render(request, "usuarios/crear_usuario.html")
+    from .forms import UsuarioLecturaForm
+    from django.contrib.auth.models import User
+
+    mensaje = ""
+    if request.method == "POST":
+        form = UsuarioLecturaForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+            # Si el usuario ya existe, error
+            if User.objects.filter(username=username).exists():
+                mensaje = f"El usuario '{username}' ya existe."
+            else:
+                # Si el email ya existe, error
+                if User.objects.filter(email=email).exists():
+                    mensaje = f"El email '{email}' ya está en uso."
+                else:
+                    # Permitir elegir tipo de usuario (admin o lectura)
+                    is_staff = request.POST.get("is_staff") == "on"
+                    user = User.objects.create_user(
+                        username=username, email=email, password=password
+                    )
+                    user.is_staff = is_staff
+                    user.save()
+                    mensaje = f"Usuario '{username}' creado correctamente."
+                    form = UsuarioLecturaForm()
+        else:
+            mensaje = "Corrija los errores indicados."
+    else:
+        form = UsuarioLecturaForm()
+
+    # Mostrar todos los usuarios existentes
+    usuarios = User.objects.all().order_by("-date_joined")
+    return render(
+        request,
+        "usuarios/crear_usuario.html",
+        {"form": form, "usuarios": usuarios, "mensaje": mensaje},
+    )
 
 
 def editar_usuarios_view(request):
     """
-    Vista básica para editar usuarios
+    Vista para editar usuarios con filtros, formularios y paginación
     """
-    return render(request, "usuarios/editar_usuarios.html")
+    from .forms import EditarUsuarioForm  # noqa: F401
+
+    mensaje = ""
+    if request.method == "POST":
+        # Eliminar usuario si se envía eliminar_id
+        eliminar_id = request.POST.get("eliminar_id")
+        if eliminar_id:
+            try:
+                usuario = User.objects.get(pk=eliminar_id)
+                usuario.delete()
+                mensaje = "Usuario eliminado correctamente."
+            except User.DoesNotExist:
+                mensaje = "Usuario no encontrado para eliminar."
+        else:
+            user_id = request.POST.get("user_id")
+            if user_id:
+                try:
+                    usuario = User.objects.get(pk=user_id)
+                except User.DoesNotExist:
+                    mensaje = "Usuario no encontrado."
+                else:
+                    form = EditarUsuarioForm(request.POST, instance=usuario)
+                    if form.is_valid():
+                        form.save()
+                        mensaje = (
+                            f"Usuario '{usuario.username}' actualizado correctamente."
+                        )
+                    else:
+                        mensaje = "Error al actualizar el usuario."
+
+    q = request.GET.get("q", "").strip()
+    tipo = request.GET.get("tipo", "")
+    usuarios = User.objects.all()
+    if q:
+        usuarios = usuarios.filter(Q(username__icontains=q) | Q(email__icontains=q))
+    if tipo == "admin":
+        usuarios = usuarios.filter(is_staff=True)
+    elif tipo == "lectura":
+        usuarios = usuarios.filter(is_staff=False)
+    usuarios = usuarios.order_by("-date_joined")
+
+    # Paginación
+    paginator = Paginator(usuarios, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Formularios individuales para cada usuario
+    forms_dict = {}
+    for usuario in page_obj:
+        forms_dict[usuario.id] = EditarUsuarioForm(instance=usuario)
+
+    context = {
+        "usuarios": page_obj,
+        "forms_dict": forms_dict,
+        "page_obj": page_obj,
+        "mensaje": mensaje,
+    }
+    return render(request, "usuarios/editar_usuarios.html", context)
 
 
 def soporte_view(request):

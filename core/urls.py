@@ -14,6 +14,7 @@ from .views_app import (
     nuevo_usuario_view,
     nuevo_reporte_view,
     listar_usuarios_view,
+    admin_set_password_view,
 )
 
 urlpatterns = [
@@ -51,5 +52,10 @@ urlpatterns = [
     path("soporte/", soporte_view, name="soporte"),
     path("usuarios/nuevo/", nuevo_usuario_view, name="nuevo_usuario"),
     path("reportes/nuevo/", nuevo_reporte_view, name="nuevo_reporte"),
+    path(
+        "usuarios/<int:user_id>/cambiar_password/",
+        admin_set_password_view,
+        name="admin_set_password",
+    ),
     # path("analisis/historial/", historial_busquedas, name="historial_busquedas"),
 ]

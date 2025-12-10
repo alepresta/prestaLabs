@@ -1,15 +1,58 @@
 {% extends 'base.html' %}
 {% load dict_get %}
+{% load widget_tweaks %}
 {% block title %}Editar Usuarios | PrestaLabs{% endblock %}
 {% block content %}
-<h2>Editar usuarios</h2>
-{# Los mensajes ahora se muestran en base.html #}
-<a href="/usuarios/crear/" class="btn btn-success mb-3">Crear usuario</a>
-<table class="table">
-    <thead>
+<style>
+    .modal-dialog {
+        max-width: 400px;
+        margin: 1.75rem auto;
+    }
+    .modal-content {
+        word-break: break-word;
+        white-space: normal;
+        padding: 0;
+    }
+    .modal-body {
+        word-break: break-word;
+        white-space: normal;
+        font-size: 1rem;
+        padding: 1.25rem;
+    }
+</style>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Gestión y Edición de Usuarios</h2>
+    <a href="/usuarios/nuevo/" class="btn btn-success">Crear usuario</a>
+</div>
+{% if mensaje %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {{ mensaje }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+{% endif %}
+<form method="get" class="row mb-3 g-2 align-items-center">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Buscar usuario..." value="{{ request.GET.q|default:'' }}">
+    </div>
+    <div class="col-auto">
+        <select name="tipo" class="form-select">
+            <option value="">Todos</option>
+            <option value="admin" {% if request.GET.tipo == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="lectura" {% if request.GET.tipo == 'lectura' %}selected{% endif %}>Lectura</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+</form>
+<div class="table-responsive">
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
         <tr>
             <th>Usuario</th>
             <th>Email</th>
+            <th>Rol</th>
+            <th>Último ingreso</th>
             <th>Activo</th>
             <th>Acciones</th>
         </tr>
@@ -17,41 +60,100 @@
     <tbody>
         {% for usuario in usuarios %}
         <tr>
-            <td>
-                <form method="post" style="display:inline;">
+            <td style="min-width:160px;">
+                <form method="post" class="d-flex gap-2 align-items-center mb-0">
                     {% csrf_token %}
                     {% with form=forms_dict|dict_get:usuario.id %}
-                        {{ form.username }}
+                        {{ form.username|add_class:'form-control form-control-sm' }}
                     {% endwith %}
+                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
             </td>
-            <td>
+            <td style="min-width:200px;">
                     {% with form=forms_dict|dict_get:usuario.id %}
-                        {{ form.email }}
+                        {{ form.email|add_class:'form-control form-control-sm' }}
                     {% endwith %}
             </td>
             <td>
-                    {% with form=forms_dict|dict_get:usuario.id %}
-                        {{ form.is_active }}
-                    {% endwith %}
+                {% if usuario.is_staff %}
+                    <span class="badge bg-primary">Admin</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Lectura</span>
+                {% endif %}
             </td>
             <td>
-                <input type="hidden" name="user_id" value="{{ usuario.id }}">
+                {% if usuario.last_login %}
+                  <span class="text-success">{{ usuario.last_login|date:'d/m/Y H:i' }}</span>
+                {% else %}
+                  <span class="text-muted">Pendiente</span>
+                {% endif %}
+            </td>
+            <td>
+                {% with form=forms_dict|dict_get:usuario.id %}
+                    {{ form.is_active|add_class:'form-check-input' }}
+                {% endwith %}
+            </td>
+            <td class="text-nowrap">
                 <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-            </form>
-                        <a href="/password_change/?user_id={{ usuario.id }}" class="btn btn-warning btn-sm ms-1" title="Cambiar contraseña">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16" style="vertical-align:middle; margin-right:4px;">
-                                    <path d="M8 1a3 3 0 0 0-3 3v3h6V4a3 3 0 0 0-3-3zm-4 6V4a4 4 0 1 1 8 0v3a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm4 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                                </svg>
-                                Cambiar contraseña
-                        </a>
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="eliminar_id" value="{{ usuario.id }}">
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</button>
-            </form>
+                </form>
+                <a href="{% url 'admin_set_password' usuario.id %}" class="btn btn-warning btn-sm ms-1" title="Cambiar contraseña">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16" style="vertical-align:middle; margin-right:4px;">
+                        <path d="M8 1a3 3 0 0 0-3 3v3h6V4a3 3 0 0 0-3-3zm-4 6V4a4 4 0 1 1 8 0v3a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm4 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                    </svg>
+                    Cambiar contraseña
+                </a>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarUsuario{{ usuario.id }}">Eliminar</button>
+                <!-- Modal de confirmación -->
+                <div class="modal fade" id="modalEliminarUsuario{{ usuario.id }}" tabindex="-1" aria-labelledby="modalEliminarUsuarioLabel{{ usuario.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalEliminarUsuarioLabel{{ usuario.id }}">Confirmar eliminación</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body">
+                                ¿Estás seguro que deseas eliminar al usuario <strong>{{ usuario.username }}</strong>? Esta acción no se puede deshacer.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="eliminar_id" value="{{ usuario.id }}">
+                                    <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </td>
         </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">No hay usuarios para mostrar.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
+{# Paginación Bootstrap #}
+{% if page_obj and page_obj.has_other_pages %}
+<nav aria-label="Paginación de usuarios">
+  <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+    {% endif %}
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
 {% endblock %}
