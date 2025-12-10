@@ -6,7 +6,6 @@ function instalar_herramientas_calidad() {
     pre-commit install
     echo "Herramientas instaladas y pre-commit configurado."
 }
-#!/bin/bash
 
 function crear_usuario_lectura() {
     activar_entorno
@@ -228,9 +227,9 @@ function ayuda() {
 }
 
 case "$1" in
-        calidad)
-            instalar_herramientas_calidad
-            ;;
+    calidad)
+        instalar_herramientas_calidad
+        ;;
     entorno)
         crear_entorno
         ;;
