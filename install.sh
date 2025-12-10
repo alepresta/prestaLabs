@@ -56,6 +56,49 @@ function borrar_cache() {
     echo "Recuerda hacer un hard refresh (Ctrl+F5) en tu navegador para limpiar la caché local."
 }
 
+function instalar_todo() {
+    echo ""
+    echo "========== INICIO INSTALACIÓN COMPLETA =========="
+    # Cerrar proceso en puerto 5001 si existe
+    PID=$(lsof -ti:5001)
+    if [ ! -z "$PID" ]; then
+        echo "Matando proceso en puerto 5001 (PID: $PID)"
+        kill -9 $PID
+    fi
+    # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
+    if [ -f nohup.out ]; then
+        echo "Eliminando nohup.out para evitar conflictos de git..."
+        rm nohup.out
+    fi
+
+    echo "Actualizando código desde origin/main..."
+    if git pull origin main; then
+        echo "Código actualizado correctamente."
+    else
+        echo "[ERROR] Falló la actualización de código. Verifica tu conexión o permisos de git."
+        exit 1
+    fi
+    echo "[INSTALAR] Creando entorno virtual..."
+    crear_entorno
+    echo "[INSTALAR] Instalando dependencias..."
+    instalar_dependencias
+    echo "[INSTALAR] Copiando archivo .env..."
+    copiar_env
+    echo "[INSTALAR] Ejecutando migraciones..."
+    migrar_db
+    echo "[INSTALAR] Creando superusuario..."
+    crear_superusuario
+    echo "[INSTALAR] Recolectando archivos estáticos..."
+    recolectar_estaticos
+    echo "[INSTALAR] Borrando caché y reiniciando servidor..."
+    borrar_cache
+    echo "[INSTALAR] Reiniciando servidor..."
+    reiniciar_servidor
+    echo "\n========== INSTALACIÓN COMPLETA =========="
+    echo "Puedes cerrar la terminal, la app PrestaLabs seguirá corriendo en segundo plano."
+    ayuda
+}
+
 function ayuda() {
     echo "Opciones disponibles:"
     echo "  calidad            - Instalar herramientas de calidad y seguridad (pytest, bandit, pre-commit, coverage)"
@@ -79,3 +122,122 @@ function ayuda() {
     echo ""
     echo "Ejemplo: ./install.sh entorno"
 }
+
+function activar_entorno() {
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+        echo "Entorno virtual activado."
+    else
+        echo "[ERROR] El entorno virtual no existe. Ejecuta './install.sh entorno' primero."
+        exit 1
+    fi
+}
+
+function crear_entorno() {
+    if [ ! -d "venv" ]; then
+        python3 -m venv venv
+        echo "Entorno virtual creado."
+    else
+        echo "El entorno virtual ya existe."
+    fi
+}
+
+function instalar_dependencias() {
+    activar_entorno
+    if [ -f requirements.txt ]; then
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        echo "Dependencias instaladas."
+    else
+        echo "No se encontró requirements.txt."
+    fi
+}
+
+function copiar_env() {
+    if [ -f .env.example ] && [ ! -f .env ]; then
+        cp .env.example .env
+        echo "Archivo .env copiado desde .env.example."
+    elif [ -f .env ]; then
+        echo "El archivo .env ya existe."
+    else
+        echo "No se encontró .env.example para copiar."
+    fi
+}
+
+function migrar_db() {
+    activar_entorno
+    python manage.py makemigrations
+    python manage.py migrate
+    echo "Migraciones aplicadas."
+}
+
+function recolectar_estaticos() {
+    activar_entorno
+    python manage.py collectstatic --noinput
+    echo "Archivos estáticos recolectados."
+}
+
+function reiniciar_servidor() {
+    pkill -f "manage.py runserver" || true
+    echo "Servidor Django detenido. Reiniciando en puerto 5001..."
+    activar_entorno
+    nohup python manage.py runserver 0.0.0.0:5001 > nohup.out 2>&1 &
+    echo "Servidor Django iniciado en segundo plano en puerto 5001. Puedes cerrar la terminal y la app seguirá corriendo."
+}
+
+case "$1" in
+    calidad)
+        instalar_herramientas_calidad
+        ;;
+    entorno)
+        crear_entorno
+        ;;
+    dependencias)
+        instalar_dependencias
+        ;;
+    env)
+        copiar_env
+        ;;
+    migrar)
+        migrar_db
+        ;;
+    superusuario)
+        crear_superusuario
+        ;;
+    servidor)
+        iniciar_servidor
+        ;;
+    reiniciar_servidor)
+        reiniciar_servidor
+        ;;
+    celery)
+        iniciar_celery
+        ;;
+    cerrar)
+        cerrar_entorno
+        ;;
+    redis)
+        instalar_redis
+        ;;
+    estaticos)
+        recolectar_estaticos
+        ;;
+    borrar_cache)
+        borrar_cache
+        ;;
+    actualizar)
+        actualizar_codigo
+        ;;
+    usuario_lectura)
+        crear_usuario_lectura
+        ;;
+    integridad)
+        bash verificar_integridad.sh
+        ;;
+    todo)
+        instalar_todo
+        ;;
+    ayuda|*)
+        ayuda
+        ;;
+esac
