@@ -90,6 +90,20 @@ body {
     box-shadow: 0 -2px 8px rgba(36,44,79,0.08);
 }
 
+.footer span {
+    display: block;
+    color: #fff;
+    font-size: 1em;
+    margin-bottom: 0.2em;
+}
+
+.footer .text-center span {
+    color: var(--color-amarillo);
+    font-weight: 700;
+    font-size: 1.1em;
+}
+}
+
 .footer img {
     filter: drop-shadow(0 2px 4px rgba(36,44,79,0.12));
 }
