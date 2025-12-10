@@ -7,6 +7,30 @@ from .forms import DominioForm
 from .models import BusquedaDominio
 
 
+from django.contrib.auth.models import User
+
+
+# Vista para listar usuarios (al final del archivo)
+def listar_usuarios_view(request):
+    """
+    Vista para listar todos los usuarios del sistema.
+    Permite filtrar por nombre, email y tipo (admin/lectura).
+    """
+    q = request.GET.get("q", "").strip()
+    tipo = request.GET.get("tipo", "")
+    usuarios = User.objects.all()
+    if q:
+        usuarios = usuarios.filter(username__icontains=q) | usuarios.filter(
+            email__icontains=q
+        )
+    if tipo == "admin":
+        usuarios = usuarios.filter(is_staff=True)
+    elif tipo == "lectura":
+        usuarios = usuarios.filter(is_staff=False)
+    usuarios = usuarios.order_by("-date_joined")
+    return render(request, "usuarios/listar_usuarios.html", {"usuarios": usuarios})
+
+
 def api_status(request):
     """
     Vista para verificar el estado de la API

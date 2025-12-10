@@ -13,6 +13,7 @@ from .views_app import (
     soporte_view,
     nuevo_usuario_view,
     nuevo_reporte_view,
+    listar_usuarios_view,
 )
 
 urlpatterns = [
@@ -45,6 +46,7 @@ urlpatterns = [
     path("documentacion/", documentacion_view, name="documentacion"),
     path("configuracion/", configuracion_view, name="configuracion"),
     path("reportes/", reportes_view, name="reportes"),
+    path("usuarios/", listar_usuarios_view, name="listar_usuarios"),
     path("usuarios/editar/", editar_usuarios_view, name="editar_usuarios"),
     path("soporte/", soporte_view, name="soporte"),
     path("usuarios/nuevo/", nuevo_usuario_view, name="nuevo_usuario"),
