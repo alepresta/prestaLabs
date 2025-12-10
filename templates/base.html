@@ -25,12 +25,10 @@
                                                                 </svg>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accionesDropdown">
-                                <li><a class="dropdown-item" href="/password_change/">Cambiar contraseña</a></li>
+                                <li><a class="dropdown-item" href="/usuarios/editar/">Gestión de Usuarios</a></li>
+                                <li><a class="dropdown-item" href="/analisis/dominio/">Análisis de Dominio Completo</a></li>
+                                <li><a class="dropdown-item" href="/analisis/url/">Análisis de URL Específica</a></li>
                                 <li><a class="dropdown-item" href="/logout/">Cerrar sesión</a></li>
-                                {% if user.is_superuser %}
-                                    <li><a class="dropdown-item" href="/usuarios/crear/">Crear usuario de solo lectura</a></li>
-                                    <li><a class="dropdown-item" href="/usuarios/editar/">Editar usuarios</a></li>
-                                {% endif %}
                             </ul>
                         </li>
                     {% else %}
