@@ -2,5 +2,23 @@
 {% block title %}Análisis de Dominio | PrestaLabs{% endblock %}
 {% block content %}
 <h2>Análisis de Dominio</h2>
-<p>Vista de análisis de dominio. Aquí irá el contenido futuro.</p>
+
+<form method="post" class="mb-4">
+	{% csrf_token %}
+	{{ form.as_p }}
+	<button type="submit" class="btn btn-primary">Buscar dominio</button>
+</form>
+
+{% if mensaje %}
+	<div class="alert alert-info">{{ mensaje }}</div>
+{% endif %}
+
+<h4>Dominios buscados</h4>
+<ul class="list-group mb-4">
+	{% for dominio in dominios %}
+		<li class="list-group-item">{{ dominio }} <a href="/analisis/detalle/?dominio={{ dominio }}" class="btn btn-sm btn-outline-info float-end">Ver URLs</a></li>
+	{% empty %}
+		<li class="list-group-item">No se han buscado dominios aún.</li>
+	{% endfor %}
+</ul>
 {% endblock %}

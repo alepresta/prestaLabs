@@ -1,3 +1,5 @@
+import requests
+from defusedxml.ElementTree import fromstring
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
@@ -8,14 +10,66 @@ from rest_framework.response import Response
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-from .forms import UsuarioLecturaForm, EditarUsuarioForm
+from .forms import UsuarioLecturaForm, EditarUsuarioForm, DominioForm
 
 
 def analisis_dominio(request):
     """
-    Vista placeholder para análisis de dominio
+    Vista para ingresar dominio y mostrar historial de dominios buscados
     """
-    return render(request, "analisis_dominio.html")
+    if "dominios_buscados" not in request.session:
+        request.session["dominios_buscados"] = []
+    mensaje = ""
+    if request.method == "POST":
+        form = DominioForm(request.POST)
+        if form.is_valid():
+            dominio = form.cleaned_data["dominio"].strip().lower()
+            if dominio and dominio not in request.session["dominios_buscados"]:
+                request.session["dominios_buscados"].append(dominio)
+                request.session.modified = True
+                mensaje = f"Dominio '{dominio}' agregado al historial."
+            else:
+                mensaje = "El dominio ya fue ingresado o es inválido."
+    else:
+        form = DominioForm()
+    dominios = request.session.get("dominios_buscados", [])
+    return render(
+        request,
+        "analisis_dominio.html",
+        {"form": form, "dominios": dominios, "mensaje": mensaje},
+    )
+
+
+def analisis_detalle(request):
+    """
+    Vista para mostrar las URLs del sitemap de un dominio
+    """
+    dominio = request.GET.get("dominio", "").strip().lower()
+    urls = []
+    error = ""
+    if dominio:
+        sitemap_url = f"https://{dominio}/sitemap.xml"
+        try:
+            resp = requests.get(sitemap_url, timeout=10)
+            if resp.status_code == 200:
+                tree = fromstring(resp.content)
+                for url in tree.findall(
+                    ".//{http://www.sitemaps.org/schemas/sitemap/0.9}url"
+                ):
+                    loc = url.find("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+                    if loc is not None:
+                        urls.append(loc.text)
+            else:
+                error = f"No se pudo acceder al sitemap ({sitemap_url})."
+        except Exception as e:
+            error = f"Error al obtener el sitemap: {e}"
+    else:
+        error = "Dominio no especificado."
+    return render(
+        request,
+        "analisis_detalle.html",
+        {"dominio": dominio, "urls": urls, "error": error},
+    )
 
 
 @method_decorator(user_passes_test(lambda u: u.is_superuser), name="dispatch")
