@@ -3,7 +3,7 @@ from django.urls import path
 from .views_app import (
     index,
     api_status,
-    analisis_dominio,
+    analisis_dominio_view,
     analisis_detalle,
     documentacion_view,
     configuracion_view,
@@ -39,7 +39,7 @@ urlpatterns = [
     #     name="exportar_usuarios",
     # ),
     path("dashboard/", index, name="dashboard"),
-    path("analisis/dominio/", analisis_dominio, name="analisis_dominio"),
+    path("analisis/dominio/", analisis_dominio_view, name="analisis_dominio"),
     path("analisis/detalle/", analisis_detalle, name="analisis_detalle"),
     path("analisis/url/", analisis_url_view, name="analisis_url"),
     path("documentacion/", documentacion_view, name="documentacion"),

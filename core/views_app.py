@@ -1,10 +1,17 @@
 import re
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from .forms import DominioForm
 from .models import BusquedaDominio
+
+
+def api_status(request):
+    """
+    Vista para verificar el estado de la API
+    """
+    return JsonResponse({"status": "ok"})
 
 
 def normalizar_dominio(dominio_raw):
@@ -88,7 +95,7 @@ def analisis_dominio_view(request):
                 url = reverse("analisis_detalle") + f"?dominio={dominio}"
                 return redirect(url)
 
-    # Traer últimos 1000 registros, agrupar por dominio normalizado en Python, paginar
+    # Traer últimos 1000 registros, agrupar por dominio normalizado
     busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
     dominios_vistos = set()
     dominios_tabla = []
@@ -225,3 +232,10 @@ def json_response_view(request):
     Vista para respuesta JSON básica
     """
     return JsonResponse({"status": "ok"})
+
+
+def index(request):
+    """
+    Vista principal del dashboard institucional
+    """
+    return render(request, "dashboard/index.html")
