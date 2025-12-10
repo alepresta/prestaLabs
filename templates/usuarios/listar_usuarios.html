@@ -48,7 +48,7 @@
                 {% endif %}
             </td>
             <td>{{ usuario.date_joined|date:'d/m/Y H:i' }}</td>
-            <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
+            <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}<span class="text-warning">Pendiente</span>{% endif %}</td>
             <td>
                 <a href="/usuarios/editar/?id={{ usuario.id }}" class="btn btn-primary btn-sm">Editar</a>
                 <form method="post" action="/usuarios/eliminar/" style="display:inline;">
