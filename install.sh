@@ -179,6 +179,12 @@ function actualizar_codigo() {
 }
 
 function instalar_todo() {
+    # Cerrar proceso en puerto 5001 si existe
+    PID=$(lsof -ti:5001)
+    if [ ! -z "$PID" ]; then
+        echo "Matando proceso en puerto 5001 (PID: $PID)"
+        kill -9 $PID
+    fi
     # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
     if [ -f nohup.out ]; then
         echo "Eliminando nohup.out para evitar conflictos de git..."
