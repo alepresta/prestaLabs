@@ -81,13 +81,45 @@ body {
 }
 
 .footer {
-    background: var(--color-azul-tecnico);
+    background: linear-gradient(90deg, var(--color-azul-tecnico) 80%, var(--color-azul) 100%);
     color: #fff;
-    padding: 2rem 0 1rem 0;
+    padding: 2.5rem 0 1.5rem 0;
     font-size: 1rem;
     letter-spacing: 0.5px;
     border-top: 4px solid var(--color-amarillo);
-    box-shadow: 0 -2px 8px rgba(36,44,79,0.08);
+    box-shadow: 0 -2px 16px rgba(36,44,79,0.12);
+}
+
+.footer-card {
+    background: rgba(255,255,255,0.07);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(36,44,79,0.10);
+    display: inline-block;
+    min-width: 280px;
+    max-width: 500px;
+}
+
+.footer-mail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.footer-mail-text {
+    font-size: 1.25em;
+    font-weight: 700;
+    color: var(--color-amarillo);
+    letter-spacing: 1px;
+}
+
+.footer-info span {
+    font-weight: 600;
+    color: var(--color-amarillo);
+    font-size: 1.05em;
+    letter-spacing: 0.5px;
+}
 }
 
 .footer span {
