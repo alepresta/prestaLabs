@@ -38,7 +38,12 @@
                 <input type="hidden" name="user_id" value="{{ usuario.id }}">
                 <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
             </form>
-            <a href="/password_change/?user_id={{ usuario.id }}" class="btn btn-warning btn-sm ms-1">Cambiar contraseña</a>
+                        <a href="/password_change/?user_id={{ usuario.id }}" class="btn btn-warning btn-sm ms-1" title="Cambiar contraseña">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16" style="vertical-align:middle; margin-right:4px;">
+                                    <path d="M8 1a3 3 0 0 0-3 3v3h6V4a3 3 0 0 0-3-3zm-4 6V4a4 4 0 1 1 8 0v3a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zm4 5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                                </svg>
+                                Cambiar contraseña
+                        </a>
             <form method="post" style="display:inline;">
                 {% csrf_token %}
                 <input type="hidden" name="eliminar_id" value="{{ usuario.id }}">
