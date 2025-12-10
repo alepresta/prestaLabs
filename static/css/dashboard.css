@@ -81,14 +81,15 @@ body {
 }
 
 .footer {
-    background: linear-gradient(90deg, var(--color-azul-tecnico) 80%, var(--color-azul) 100%);
+    background: linear-gradient(90deg, var(--color-azul-tecnico) 85%, var(--color-azul) 100%);
     color: #fff;
-    padding: 2.5rem 0 1.5rem 0;
-    font-size: 1rem;
-    letter-spacing: 0.5px;
-    border-top: 4px solid var(--color-amarillo);
-    box-shadow: 0 -2px 16px rgba(36,44,79,0.12);
+    padding: 1.1rem 0 0.7rem 0;
+    font-size: 0.98rem;
+    letter-spacing: 0.3px;
+    border-top: 2px solid var(--color-amarillo);
+    box-shadow: 0 -1px 8px rgba(36,44,79,0.08);
     font-family: var(--font-family);
+}
 }
 
 .footer-card {
@@ -133,76 +134,32 @@ body {
 .footer-mail-text {
     font-size: 1.35em;
     font-weight: 700;
-    color: var(--color-amarillo);
-    letter-spacing: 1px;
-    font-family: var(--font-family);
-}
-.footer-info {
-    margin-bottom: 0.5em;
-}
-.footer-info-title {
-    font-weight: 600;
-    color: var(--color-amarillo);
-    font-size: 1.08em;
-    letter-spacing: 0.5px;
-    font-family: var(--font-family);
-}
-.footer-bar {
-    width: 60%;
-    height: 4px;
-    background: var(--color-amarillo);
-    border-radius: 2px;
-    margin: 0.7em auto 0 auto;
-    opacity: 0.7;
-}
-.footer-brand {
-    margin-top: 0.7em;
-}
-.footer-brand-text {
-    color: var(--gris);
-    font-size: 1em;
-    font-family: var(--font-family);
-    letter-spacing: 0.5px;
-}
-}
-
-.footer-card {
-    background: rgba(255,255,255,0.07);
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(36,44,79,0.10);
-    display: inline-block;
-    min-width: 280px;
-    max-width: 500px;
-}
-
-.footer-mail {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5em;
-    margin-bottom: 0.5em;
-}
-
-.footer-mail-text {
-    font-size: 1.25em;
-    font-weight: 700;
-    color: var(--color-amarillo);
-    letter-spacing: 1px;
-}
-
-.footer-info span {
-    font-weight: 600;
-    color: var(--color-amarillo);
-    font-size: 1.05em;
-    letter-spacing: 0.5px;
-}
-}
-
-.footer span {
-    display: block;
-    color: #fff;
-    font-size: 1em;
-    margin-bottom: 0.2em;
+    /* Minimalista y profesional */
+    .footer-minimal {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2em;
+        padding: 0;
+    }
+    .footer-mail-text {
+        font-size: 1.08em;
+        font-weight: 600;
+        color: var(--color-amarillo);
+        letter-spacing: 0.5px;
+        font-family: var(--font-family);
+        display: flex;
+        align-items: center;
+        gap: 0.3em;
+    }
+    .footer-info-title {
+        font-weight: 500;
+        color: var(--color-amarillo);
+        font-size: 0.98em;
+        letter-spacing: 0.3px;
+        font-family: var(--font-family);
+        margin-top: 0.1em;
+    }
 }
 
 .footer .text-center span {
