@@ -47,10 +47,8 @@
                     <span class="badge" style="background:var(--color-amarillo);color:var(--color-azul-tecnico);font-weight:600;">Lectura</span>
                 {% endif %}
             </td>
-            <td>
-                {% if not usuario.last_login %}Pendiente{% else %}{{ usuario.date_joined|date:'d/m/Y H:i' }}{% endif %}
-            </td>
-            <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}-{% endif %}</td>
+            <td>{{ usuario.date_joined|date:'d/m/Y H:i' }}</td>
+            <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}Pendiente{% endif %}</td>
             <td>
                 <a href="/usuarios/editar/?id={{ usuario.id }}" class="btn btn-primary btn-sm">Editar</a>
                 <form method="post" action="/usuarios/eliminar/" style="display:inline;">
