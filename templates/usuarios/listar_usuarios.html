@@ -2,6 +2,21 @@
 {% block title %}Gestión de Usuarios | PrestaLabs{% endblock %}
 {% block content %}
 <h2 class="mb-4">Gestión de Usuarios</h2>
+<form method="get" class="row mb-3 g-2 align-items-center">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Buscar usuario..." value="{{ request.GET.q|default:'' }}">
+    </div>
+    <div class="col-auto">
+        <select name="tipo" class="form-select">
+            <option value="">Todos</option>
+            <option value="admin" {% if request.GET.tipo == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="lectura" {% if request.GET.tipo == 'lectura' %}selected{% endif %}>Lectura</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </div>
+</form>
 <a href="/usuarios/crear/" class="btn btn-success mb-3">Crear usuario</a>
 <table class="table table-bordered table-hover">
     <thead>
@@ -16,6 +31,18 @@
     </thead>
     <tbody>
         {% for usuario in usuarios %}
+        {% if request.GET.q %}
+            {% if usuario.username|lower contains request.GET.q|lower or usuario.email|lower contains request.GET.q|lower %}
+            {% else %}
+                {% continue %}
+            {% endif %}
+        {% endif %}
+        {% if request.GET.tipo == 'admin' and not usuario.is_staff %}
+            {% continue %}
+        {% endif %}
+        {% if request.GET.tipo == 'lectura' and usuario.is_staff %}
+            {% continue %}
+        {% endif %}
         <tr>
             <td>{{ usuario.username }}</td>
             <td>{{ usuario.email }}</td>
