@@ -15,15 +15,17 @@ function crear_usuario_lectura() {
     read EMAIL
     echo "Ingrese la contraseña para $USERNAME:"
     read -s PASSWORD
-    activar_entorno
-    echo "Ingrese el nombre de usuario de solo vista:"
-    read USERNAME
-    echo "Ingrese el email del usuario de solo vista:"
-    read EMAIL
-    echo "Ingrese la contraseña para $USERNAME:"
-    read -s PASSWORD
     python manage.py shell <<EOF
-function crear_superusuario() {
+from django.contrib.auth.models import User
+if not User.objects.filter(username='$USERNAME').exists():
+    user = User.objects.create_user('$USERNAME', email='$EMAIL', password='$PASSWORD')
+    user.is_staff = False
+    user.save()
+    print('Usuario de solo vista creado: $USERNAME')
+else:
+    print('El usuario "$USERNAME" ya existe.')
+EOF
+}
     activar_entorno
     USERNAME="usuario_demo"
     EMAIL="demo@ejemplo.com"
@@ -53,8 +55,8 @@ function reiniciar_servidor() {
     pkill -f "manage.py runserver" || true
     echo "Servidor Django detenido. Reiniciando en puerto 5001..."
     activar_entorno
-    nohup python manage.py runserver 0.0.0.0:5001 &
-    echo "Servidor Django iniciado en segundo plano en puerto 5001."
+    nohup python manage.py runserver 0.0.0.0:5001 > nohup.out 2>&1 &
+    echo "Servidor Django iniciado en segundo plano en puerto 5001. Puedes cerrar la terminal y la app seguirá corriendo."
 }
 
 function iniciar_celery() {
@@ -155,7 +157,8 @@ function instalar_todo() {
     borrar_cache
     echo "[INSTALAR] Reiniciando servidor..."
     reiniciar_servidor
-    echo "\n========== INSTALACIÓN COMPLETA, CACHÉ LIMPIADA Y SERVIDOR INICIADO =========="
+    echo "\n========== INSTALACIÓN COMPLETA =========="
+    echo "Puedes cerrar la terminal, la app PrestaLabs seguirá corriendo en segundo plano."
     echo "  dependencias   - Instalar dependencias"
     echo "  env            - Copiar archivo .env"
     echo "  migrar         - Ejecutar migraciones"
