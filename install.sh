@@ -1,12 +1,3 @@
-function instalar_herramientas_calidad() {
-    echo "Instalando herramientas de calidad y seguridad (pytest, pytest-django, factory-boy, bandit, pre-commit, coverage)..."
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install pytest pytest-django factory-boy bandit pre-commit coverage
-    pre-commit install
-    echo "Herramientas instaladas y pre-commit configurado."
-}
-
 function crear_usuario_lectura() {
     activar_entorno
     echo "Ingrese el nombre de usuario de solo vista:"
@@ -26,6 +17,8 @@ else:
     print('El usuario "$USERNAME" ya existe.')
 EOF
 }
+
+function crear_superusuario() {
     activar_entorno
     USERNAME="usuario_demo"
     EMAIL="demo@ejemplo.com"
@@ -45,193 +38,44 @@ EOF
     fi
 }
 
-function iniciar_servidor() {
-    activar_entorno
-    echo "Iniciando servidor Django en puerto 5001..."
-    python manage.py runserver 0.0.0.0:5001
-}
-
-function reiniciar_servidor() {
-    pkill -f "manage.py runserver" || true
-    echo "Servidor Django detenido. Reiniciando en puerto 5001..."
-    activar_entorno
-    nohup python manage.py runserver 0.0.0.0:5001 > nohup.out 2>&1 &
-    echo "Servidor Django iniciado en segundo plano en puerto 5001. Puedes cerrar la terminal y la app seguirá corriendo."
-}
-
-function iniciar_celery() {
-    activar_entorno
-    echo "Iniciando worker de Celery..."
-    celery -A $PROYECTO worker --loglevel=info
-}
-
-function cerrar_entorno() {
-    deactivate
-    echo "Entorno virtual desactivado."
-}
-
-function instalar_redis() {
-    echo "Instalando Redis..."
-    sudo apt update && sudo apt install -y redis-server
-    sudo service redis-server start
-    echo "Redis instalado y ejecutándose."
-}
-
-function recolectar_estaticos() {
-    activar_entorno
-    # Restaurar archivos eliminados en static/ antes de recolectar
-    git checkout static/
-    python manage.py collectstatic
-}
-
 function borrar_cache() {
     activar_entorno
     echo "Borrando caché de Django, archivos __pycache__ y estáticos..."
-    # Limpiar caché de Django (si está configurado)
     python manage.py shell -c "from django.core.cache import cache; cache.clear()"
-    # Eliminar caché de archivos Python
     find . -type d -name '__pycache__' -exec rm -rf {} +
-    # Eliminar archivos estáticos generados previamente en staticfiles, no en static
     if [ -d staticfiles ]; then
         rm -rf staticfiles/*
         echo "Carpeta staticfiles/ limpiada."
     fi
-    # Restaurar archivos eliminados en static/ antes de recolectar
     git checkout static/
     python manage.py collectstatic --noinput
     echo "Caché de Django y archivos estáticos eliminados y regenerados."
-    # Reiniciar el servidor para asegurar que tome los cambios
     pkill -f "manage.py runserver" || true
     nohup python manage.py runserver 0.0.0.0:5001 &
     echo "Servidor Django reiniciado."
     echo "Recuerda hacer un hard refresh (Ctrl+F5) en tu navegador para limpiar la caché local."
 }
 
-function actualizar_codigo() {
-    # Eliminar logs de nohup antes de actualizar código para evitar conflictos de git
-    if [ -f nohup.out ]; then
-        echo "Eliminando nohup.out para evitar conflictos de git..."
-        rm nohup.out
-    fi
-
-    echo "Actualizando código desde origin/main..."
-    git pull origin main
-    echo "Código actualizado."
-}
-
-function instalar_todo() {
-    echo ""
-    echo "========== INICIO INSTALACIÓN COMPLETA =========="
-    # Cerrar proceso en puerto 5001 si existe
-    PID=$(lsof -ti:5001)
-    if [ ! -z "$PID" ]; then
-        echo "Matando proceso en puerto 5001 (PID: $PID)"
-        kill -9 $PID
-    fi
-    # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
-    if [ -f nohup.out ]; then
-        echo "Eliminando nohup.out para evitar conflictos de git..."
-        rm nohup.out
-    fi
-
-    echo "Actualizando código desde origin/main..."
-    if git pull origin main; then
-        echo "Código actualizado correctamente."
-    else
-        echo "[ERROR] Falló la actualización de código. Verifica tu conexión o permisos de git."
-        exit 1
-    fi
-    echo "[INSTALAR] Creando entorno virtual..."
-    crear_entorno
-    echo "[INSTALAR] Instalando dependencias..."
-    instalar_dependencias
-    echo "[INSTALAR] Copiando archivo .env..."
-    copiar_env
-    echo "[INSTALAR] Ejecutando migraciones..."
-    migrar_db
-    echo "[INSTALAR] Creando superusuario..."
-    crear_superusuario
-    echo "[INSTALAR] Recolectando archivos estáticos..."
-    recolectar_estaticos
-    echo "[INSTALAR] Borrando caché y reiniciando servidor..."
-    borrar_cache
-    echo "[INSTALAR] Reiniciando servidor..."
-    reiniciar_servidor
-    echo "\n========== INSTALACIÓN COMPLETA =========="
-    echo "Puedes cerrar la terminal, la app PrestaLabs seguirá corriendo en segundo plano."
-    echo "  dependencias   - Instalar dependencias"
-    echo "  env            - Copiar archivo .env"
-    echo "  migrar         - Ejecutar migraciones"
-    echo "  superusuario   - Crear superusuario"
-    echo "  servidor       - Iniciar servidor Django"
+function ayuda() {
+    echo "Opciones disponibles:"
+    echo "  calidad            - Instalar herramientas de calidad y seguridad (pytest, bandit, pre-commit, coverage)"
+    echo "  entorno            - Crear entorno virtual"
+    echo "  dependencias       - Instalar dependencias"
+    echo "  env                - Copiar archivo .env"
+    echo "  migrar             - Ejecutar migraciones"
+    echo "  superusuario       - Crear superusuario"
+    echo "  servidor           - Iniciar servidor Django"
     echo "  reiniciar_servidor - Reiniciar el servidor Django en segundo plano"
-    echo "  celery         - Iniciar worker Celery"
-    echo "  cerrar         - Desactivar entorno virtual"
-    echo "  redis          - Instalar y ejecutar Redis"
-    echo "  estaticos      - Recolectar archivos estáticos"
-    echo "  borrar_cache   - Limpiar caché de Django, archivos __pycache__ y estáticos"
-    echo "  actualizar     - Actualizar código con git pull origin main"
-    echo "  usuario_lectura - Crear usuario de solo vista (lectura, sin acceso admin)"
-    echo "  integridad     - Verificar integridad de la base de datos"
-    echo "  todo           - Ejecutar todos los pasos de instalación (incluye limpieza de caché)"
-    echo "  calidad        - Instalar herramientas de calidad y seguridad (pytest, bandit, pre-commit, coverage)"
-    echo "  ayuda          - Mostrar esta ayuda"
-    echo "\nEjemplo: ./install.sh entorno"
+    echo "  celery             - Iniciar worker Celery"
+    echo "  cerrar             - Desactivar entorno virtual"
+    echo "  redis              - Instalar y ejecutar Redis"
+    echo "  estaticos          - Recolectar archivos estáticos"
+    echo "  borrar_cache       - Limpiar caché de Django, archivos __pycache__ y estáticos"
+    echo "  actualizar         - Actualizar código con git pull origin main"
+    echo "  usuario_lectura    - Crear usuario de solo vista (lectura, sin acceso admin)"
+    echo "  integridad         - Verificar integridad de la base de datos"
+    echo "  todo               - Ejecutar todos los pasos de instalación (incluye limpieza de caché)"
+    echo "  ayuda              - Mostrar esta ayuda"
+    echo ""
+    echo "Ejemplo: ./install.sh entorno"
 }
-
-case "$1" in
-    calidad)
-        instalar_herramientas_calidad
-        ;;
-    entorno)
-        crear_entorno
-        ;;
-    dependencias)
-        instalar_dependencias
-        ;;
-    env)
-        copiar_env
-        ;;
-    migrar)
-        migrar_db
-        ;;
-    superusuario)
-        crear_superusuario
-        ;;
-    servidor)
-        iniciar_servidor
-        ;;
-    reiniciar_servidor)
-        reiniciar_servidor
-        ;;
-    celery)
-        iniciar_celery
-        ;;
-    cerrar)
-        cerrar_entorno
-        ;;
-    redis)
-        instalar_redis
-        ;;
-    estaticos)
-        recolectar_estaticos
-        ;;
-    borrar_cache)
-        borrar_cache
-        ;;
-    actualizar)
-        actualizar_codigo
-        ;;
-    usuario_lectura)
-        crear_usuario_lectura
-        ;;
-    integridad)
-        bash verificar_integridad.sh
-        ;;
-    todo)
-        instalar_todo
-        ;;
-    ayuda|*)
-        ayuda
-        ;;
-esac
