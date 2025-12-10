@@ -178,6 +178,7 @@ function actualizar_codigo() {
 }
 
 function instalar_todo() {
+    echo "\n========== INICIO INSTALACIÓN COMPLETA =========="
     # Cerrar proceso en puerto 5001 si existe
     PID=$(lsof -ti:5001)
     if [ ! -z "$PID" ]; then
@@ -191,21 +192,29 @@ function instalar_todo() {
     fi
 
     echo "Actualizando código desde origin/main..."
-    git pull origin main
+    if git pull origin main; then
+        echo "Código actualizado correctamente."
+    else
+        echo "[ERROR] Falló la actualización de código. Verifica tu conexión o permisos de git."
+        exit 1
+    fi
+    echo "[INSTALAR] Creando entorno virtual..."
     crear_entorno
+    echo "[INSTALAR] Instalando dependencias..."
     instalar_dependencias
+    echo "[INSTALAR] Copiando archivo .env..."
     copiar_env
+    echo "[INSTALAR] Ejecutando migraciones..."
     migrar_db
+    echo "[INSTALAR] Creando superusuario..."
     crear_superusuario
+    echo "[INSTALAR] Recolectando archivos estáticos..."
     recolectar_estaticos
+    echo "[INSTALAR] Borrando caché y reiniciando servidor..."
     borrar_cache
+    echo "[INSTALAR] Reiniciando servidor..."
     reiniciar_servidor
-    echo "\nInstalación completa, caché limpiada y servidor iniciado."
-}
-
-function ayuda() {
-    echo "\nOpciones disponibles:"
-    echo "  entorno        - Crear y activar entorno virtual"
+    echo "\n========== INSTALACIÓN COMPLETA, CACHÉ LIMPIADA Y SERVIDOR INICIADO =========="
     echo "  dependencias   - Instalar dependencias"
     echo "  env            - Copiar archivo .env"
     echo "  migrar         - Ejecutar migraciones"
