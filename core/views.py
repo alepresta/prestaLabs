@@ -11,6 +11,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 
+def dashboard_redirect(request):
+    """
+    Redirige /dashboard a login si no está autenticado, o al index si sí
+    """
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
+    return redirect("index")
+
+
 class AnalisisUrlView(View):
     template_name = "analisis_url.html"
 
