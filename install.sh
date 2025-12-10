@@ -19,62 +19,61 @@ function crear_usuario_lectura() {
 from django.contrib.auth.models import User
 if not User.objects.filter(username='$USERNAME').exists():
     user = User.objects.create_user('$USERNAME', email='$EMAIL', password='$PASSWORD')
-    user.is_staff = False
-    user.save()
-    print('Usuario de solo vista creado: $USERNAME')
-else:
-    print('El usuario "$USERNAME" ya existe.')
-EOF
-}
-function reiniciar_servidor() {
-    # Buscar y matar cualquier proceso en el puerto 5001
-    PID=$(lsof -ti:5001)
-    if [ ! -z "$PID" ]; then
-        echo "Matando proceso en puerto 5001 (PID: $PID)"
-        kill -9 $PID
-    fi
-    pkill -f "manage.py runserver" || true
-    echo "Servidor Django detenido. Reiniciando en puerto 5001..."
-    activar_entorno
-    nohup python manage.py runserver 0.0.0.0:5001 &
-    echo "Servidor Django iniciado en segundo plano en puerto 5001."
-}
-
-#!/bin/bash
-# Script de instalación y gestión para PrestaLabs
-# Uso: ./install.sh [opción]
-
-set -e
-
-PROYECTO="prestaLabs"
-VENV="venv"
-
-
-function crear_entorno() {
-    echo "Creando entorno virtual..."
-    python3 -m venv $VENV
-    source $VENV/bin/activate
-    echo "Entorno virtual activado."
-}
-
-function activar_entorno() {
-    source $VENV/bin/activate
-    echo "Entorno virtual activado."
-}
-
-function instalar_dependencias() {
-    activar_entorno
-    echo "Instalando dependencias..."
-    pip install -r requirements.txt
-}
-
-function copiar_env() {
-    if [ ! -f .env ]; then
-        cp .env.example .env
-        echo "Archivo .env copiado. Edita tus configuraciones."
-    else
-        echo ".env ya existe."
-    fi
+    case "$1" in
+    calidad)
+        instalar_herramientas_calidad
+        ;;
+    entorno)
+        crear_entorno
+        ;;
+    dependencias)
+        instalar_dependencias
+        ;;
+    env)
+        copiar_env
+        ;;
+    migrar)
+        migrar_db
+        ;;
+    superusuario)
+        crear_superusuario
+        ;;
+    servidor)
+        iniciar_servidor
+        ;;
+    reiniciar_servidor)
+        reiniciar_servidor
+        ;;
+    celery)
+        iniciar_celery
+        ;;
+    cerrar)
+        cerrar_entorno
+        ;;
+    redis)
+        instalar_redis
+        ;;
+    estaticos)
+        recolectar_estaticos
+        ;;
+    borrar_cache)
+        borrar_cache
+        ;;
+    actualizar)
+        actualizar_codigo
+        ;;
+    usuario_lectura)
+        crear_usuario_lectura
+        ;;
+    integridad)
+        bash verificar_integridad.sh
+        ;;
+    todo)
+        instalar_todo
+        ;;
+    ayuda|*)
+        ayuda
+        ;;
 }
 
 function migrar_db() {
