@@ -12,6 +12,11 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="{% url 'core:index' %}">PrestaLabs</a>
+            <div class="d-none d-md-flex align-items-center ms-auto me-4" id="header-time">
+                <span style="font-weight:600; color:var(--color-amarillo); font-size:1.05em;">
+                    Argentina (CABA): <span id="hora-caba"></span>
+                </span>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -56,6 +61,21 @@
     </main>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function actualizarHoraCABA() {
+        const ahora = new Date();
+        // UTC-3 para Argentina/CABA
+        const offset = -3;
+        const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+        const caba = new Date(utc + (3600000 * offset));
+        const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const fecha = caba.toLocaleDateString('es-AR', opciones);
+        const hora = caba.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('hora-caba').textContent = fecha + ' ' + hora;
+    }
+    setInterval(actualizarHoraCABA, 1000);
+    actualizarHoraCABA();
+    </script>
     </main>
 
     <footer class="footer mt-auto">
