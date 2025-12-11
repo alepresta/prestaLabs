@@ -1,13 +1,15 @@
+from core.tasks import tarea_analisis_dominio
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib import messages
 import requests
 from defusedxml.ElementTree import fromstring
-import re
 import validators
 from .analizadores import analizar_formularios, analizar_analytics
 from urllib.parse import urljoin
+import re
 
 
 # --- Mejoras ---
@@ -146,7 +148,6 @@ def procesar_sitemap(content, url_base, max_urls=100, profundidad=0, max_profund
 @login_required
 def analisis_dominio(request):
     error = None
-    resultados = []
     if request.method == "POST":
         dominio = request.POST.get("dominio", "").strip().lower()
         if not dominio:
@@ -160,57 +161,14 @@ def analisis_dominio(request):
             dominio = dominio[4:]
         if "/" in dominio:
             dominio = dominio.split("/")[0]
-        sitemap_url, sitemap_content = buscar_sitemap(dominio)
-        if sitemap_url and sitemap_content:
-            try:
-                urls = procesar_sitemap(
-                    sitemap_content, f"https://{dominio}", max_urls=100
-                )
-                if urls:
-                    for url in urls:
-                        resultados.append(
-                            {
-                                "url": url,
-                                "estado": "OK",
-                                "detalles": f"Encontrado en sitemap: {url}",
-                            }
-                        )
-                    total_encontradas = len(urls)
-                    request.session["ultimo_analisis"] = {
-                        "tipo": "dominio",
-                        "dominio": dominio,
-                        "sitemap_url": sitemap_url,
-                        "resultados": resultados,
-                        "total_urls": total_encontradas,
-                        "timestamp": str(timezone.now()),
-                    }
-                    messages.success(
-                        request,
-                        f"✅ Encontradas {total_encontradas} URLs en el sitemap",
-                    )
-                    return redirect("analisis_resultados")
-                else:
-                    error = "Sitemap encontrado pero no contiene URLs válidas"
-            except Exception as e:
-                error = f"Error procesando sitemap: {str(e)}"
-        else:
-            error = "No se encontró sitemap para el dominio."
-            resultados.append(
-                {
-                    "url": f"https://{dominio}",
-                    "estado": "SIN SITEMAP",
-                    "detalles": "Analizando solo página principal (no se encontró sitemap)",
-                }
-            )
-            request.session["ultimo_analisis"] = {
-                "tipo": "dominio",
-                "dominio": dominio,
-                "sitemap_url": None,
-                "resultados": resultados,
-                "total_urls": 1,
-                "timestamp": str(timezone.now()),
-            }
-            return redirect("analisis_resultados")
+        # Lanzar tarea Celery siempre
+        task = tarea_analisis_dominio.delay(dominio)
+        request.session["analisis_task_id"] = task.id
+        messages.info(
+            request,
+            f"Análisis iniciado para {dominio}. Puedes ver el progreso en tiempo real.",
+        )
+        return redirect("analisis_estado")
     return render(request, "analisis/dominio.html", {"error": error})
 
 

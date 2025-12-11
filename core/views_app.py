@@ -21,15 +21,42 @@ crawling_progress = {}
 def guardar_busqueda_ajax(dominio, urls, user=None):
     # Limpiar: quitar vacíos, espacios y duplicados
     urls_limpias = list(dict.fromkeys([u.strip() for u in urls if u and u.strip()]))
-    BusquedaDominio.objects.create(
-        dominio=dominio,
-        usuario=(
-            user
-            if user and hasattr(user, "is_authenticated") and user.is_authenticated
-            else None
-        ),
-        urls="\n".join(urls_limpias),
-    )
+    from django.utils import timezone
+
+    # Buscar la última búsqueda sin fecha_fin para este usuario y dominio
+
+    obj = None
+    if user and hasattr(user, "is_authenticated") and user.is_authenticated:
+        obj = (
+            BusquedaDominio.objects.filter(
+                dominio=dominio, usuario=user, fecha_fin__isnull=True
+            )
+            .order_by("-fecha")
+            .first()
+        )
+    else:
+        obj = (
+            BusquedaDominio.objects.filter(
+                dominio=dominio, usuario=None, fecha_fin__isnull=True
+            )
+            .order_by("-fecha")
+            .first()
+        )
+    if obj:
+        obj.urls = "\n".join(urls_limpias)
+        obj.fecha_fin = timezone.now()
+        obj.save()
+    else:
+        BusquedaDominio.objects.create(
+            dominio=dominio,
+            usuario=(
+                user
+                if user and hasattr(user, "is_authenticated") and user.is_authenticated
+                else None
+            ),
+            urls="\n".join(urls_limpias),
+            fecha=timezone.now(),
+        )
 
 
 def crawl_urls_progress(base_url, max_urls, progress_key):
@@ -144,9 +171,24 @@ def iniciar_crawling_ajax(request):
         progress_key = f"{dominio}_{int(time.time())}"
         crawling_progress[progress_key] = {"count": 0, "last": None, "done": False}
 
+        # Crear el objeto BusquedaDominio al iniciar
+        from django.utils import timezone
+
+        obj = BusquedaDominio.objects.create(
+            dominio=dominio,
+            usuario=(request.user if request.user.is_authenticated else None),
+            urls="",
+            fecha=timezone.now(),
+        )
+        # Guardar el id en la sesión para referencia
+        request.session["busqueda_id"] = obj.id
+
         def crawl_and_save():
             urls = crawl_urls_progress(base_url, limite_urls, progress_key)
-            guardar_busqueda_ajax(dominio, urls, user=request.user)
+            # Al finalizar, actualizar el objeto con urls y fecha_fin
+            obj.urls = "\n".join(urls)
+            obj.fecha_fin = timezone.now()
+            obj.save()
 
         t = threading.Thread(target=crawl_and_save)
         t.start()
@@ -365,15 +407,36 @@ def analisis_dominio_view(request):
 
     busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
     dominios_tabla = []
+    from django.utils import timezone
+
     for b in busquedas_qs:
         dom_norm = normalizar_dominio(b.dominio)
+        fecha_inicio = timezone.localtime(b.fecha)
+        fecha_fin = timezone.localtime(b.fecha_fin) if b.fecha_fin else None
+        duracion = None
+        estado = "En progreso"
+        if fecha_fin:
+            delta = fecha_fin - fecha_inicio
+            total_seconds = int(delta.total_seconds())
+            if total_seconds < 0:
+                duracion = "-"
+            else:
+                h = total_seconds // 3600
+                m = (total_seconds % 3600) // 60
+                s = total_seconds % 60
+                duracion = f"{h:02}:{m:02}:{s:02}"
+            estado = "Finalizado"
         dominios_tabla.append(
             {
-                "dominio": dom_norm,
                 "id": b.id,
-                "fecha": b.fecha,
+                "dominio": dom_norm,
+                "inicio": fecha_inicio.strftime("%Y-%m-%d %H:%M:%S"),
+                "fin": fecha_fin.strftime("%Y-%m-%d %H:%M:%S") if fecha_fin else "",
+                "duracion": duracion or "",
                 "usuario": b.usuario.username if b.usuario else "-",
-                "urls": b.urls,
+                "total_urls": len(b.get_urls()),
+                "estado": estado,
+                "url_original": b.dominio,
             }
         )
 
@@ -386,8 +449,10 @@ def analisis_dominio_view(request):
     print(f"Registros mostrados (página): {len(page_obj)}")
 
     for b in page_obj:
-        urls_count = len(b["urls"].splitlines()) if b["urls"] else 0
-        print(f"  - {b['dominio']} | {b['fecha']} | URLs: {urls_count}")
+        print(
+            f"  - {b['dominio']} | Inicio: {b['inicio']} | Fin: {b['fin']} | "
+            f"Duración: {b['duracion']} | URLs: {b['total_urls']}"
+        )
 
     return render(
         request,

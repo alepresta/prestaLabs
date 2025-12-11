@@ -17,13 +17,34 @@
 	<button type="submit" class="btn btn-primary">Buscar dominio</button>
 </form>
 
-<div id="progreso-crawling" class="my-3" style="display:none;">
-	<div class="progress">
-		<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
-	</div>
-	<div class="mt-2">
-		<span id="progreso-urls">URLs encontradas: 0</span>
-		<span id="progreso-ultima" class="text-muted small"></span>
+<div id="ultimo-proceso-mini" class="mb-2"></div>
+<div id="progreso-crawling" class="my-3">
+	<div class="card shadow-sm border-primary">
+		<div class="card-body">
+			<div class="d-flex align-items-center mb-2">
+				<span class="me-2" style="font-size:1.5em;color:#0d6efd;">
+					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-globe" viewBox="0 0 16 16">
+						<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0 0 14A7 7 0 0 0 8 1z"/>
+						<path d="M8 1a7 7 0 0 0 0 14V1z"/>
+					</svg>
+				</span>
+				<h5 class="mb-0">Progreso de Crawling de Dominio</h5>
+			</div>
+			<div class="progress mb-2" style="height: 1.5rem;">
+				<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-info fw-bold" role="progressbar" style="width: 0%">0%</div>
+			</div>
+			<div id="barra-info-tiempo" class="mb-2 small"></div>
+			</div>
+			<div class="row align-items-center">
+				<div class="col-auto">
+					<span id="progreso-urls" class="badge bg-primary fs-6">URLs encontradas: 0</span>
+				</div>
+				<div class="col-auto">
+					<span id="progreso-ultima" class="text-muted small"></span>
+				</div>
+				<div class="col-auto" id="progreso-estado-icono"></div>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -47,9 +68,16 @@
 					<input type="checkbox" name="eliminar_ids" value="{{ d.id }}" class="form-check-input me-2 eliminar-checkbox">
 					<span class="badge bg-secondary me-2">ID {{ d.id }}</span>
 					<strong>{{ d.dominio }}</strong>
-					<span class="text-muted small ms-2">({{ d.fecha|date:"d/m/Y H:i" }})</span>
+					<span class="text-muted small ms-2">Inicio: {{ d.inicio }}</span>
+					{% if d.fin %}<span class="text-muted small ms-2">Fin: {{ d.fin }}</span>{% endif %}
+					{% if d.duracion %}<span class="text-muted small ms-2">Duración: {{ d.duracion }}</span>{% endif %}
 					<span class="text-muted small ms-2">por {{ d.usuario }}</span>
-					<span class="badge bg-info ms-2">{{ d.urls|linebreaksbr|length }} URLs</span>
+					<span class="badge bg-info ms-2">{{ d.total_urls }} URLs</span>
+					{% if d.estado == 'Finalizado' %}
+						<span class="badge bg-success ms-2">{{ d.estado }}</span>
+					{% else %}
+						<span class="badge bg-info ms-2">{{ d.estado }}</span>
+					{% endif %}
 				</div>
 				<div>
 					<a href="/analisis/detalle/?id={{ d.id }}" class="btn btn-sm btn-outline-info ms-md-3 mt-2 mt-md-0">Ver URLs</a>
@@ -66,6 +94,78 @@
 <script>
 // Checkbox maestro para seleccionar/deseleccionar todos
 document.addEventListener('DOMContentLoaded', function() {
+	// Resumen minimalista y elegante del último proceso
+	function cargarUltimoProcesoMini() {
+		fetch('/analisis/estado/', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+		.then(r => r.json())
+		.then(data => {
+			const cont = document.getElementById('ultimo-proceso-mini');
+			// Usar data.result si existe, si no data.progreso
+			let info = data.result || (data.progreso && Object.keys(data.progreso).length ? data.progreso : null);
+			if (!info || !info.dominio) {
+				cont.innerHTML = '';
+				return;
+			}
+			let color = 'secondary', estado = 'Desconocido', icon = '';
+			if (data.status === 'SUCCESS') {
+				color = 'success'; estado = 'Éxito';
+				icon = `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-check-circle-fill me-1' viewBox='0 0 16 16'><path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 11.03a.75.75 0 0 0 1.07 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 9.439 6.03 7.97a.75.75 0 1 0-1.06 1.06l1.5 1.5z'/></svg>`;
+			} else if (data.status === 'FAILURE') {
+				color = 'danger'; estado = 'Error';
+				icon = `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-x-circle-fill me-1' viewBox='0 0 16 16'><path d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/></svg>`;
+			} else if (data.status === 'REVOKED') {
+				color = 'warning'; estado = 'Cancelado';
+				icon = `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-exclamation-triangle-fill me-1' viewBox='0 0 16 16'><path d='M8 0c-.69 0-1.342.352-1.732.928L.165 13.233C-.226 13.81.226 14.5.893 14.5h14.214c.667 0 1.119-.69.728-1.267L9.732.928A1.99 1.99 0 0 0 8 0zm.93 4.412-1 6A.5.5 0 0 1 7.5 11h-1a.5.5 0 0 1-.5-.588l1-6A.5.5 0 0 1 7.5 4h1a.5.5 0 0 1 .5.588zM8 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2z'/></svg>`;
+			} else {
+				color = 'info'; estado = 'En progreso';
+				icon = `<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' class='bi bi-arrow-repeat me-1' viewBox='0 0 16 16'><path d='M2 2a.5.5 0 0 1 .5.5V5a.5.5 0 0 1-1 0V2.707l-.146.147a.5.5 0 0 1-.708-.708l1-1a.5.5 0 0 1 .708 0l1 1a.5.5 0 0 1-.708.708L2.5 2.707V5a.5.5 0 0 1-1 0V2.5A.5.5 0 0 1 2 2zm12 12a.5.5 0 0 1-.5-.5V11a.5.5 0 0 1 1 0v2.293l.146-.147a.5.5 0 0 1 .708.708l-1 1a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.146.147V11a.5.5 0 0 1 1 0v2.5a.5.5 0 0 1-.5.5z'/></svg>`;
+			}
+			// Formatear fecha/hora a YYYY-MM-DD HH:MM:SS
+			function formatFecha(fechaStr) {
+				if (!fechaStr) return '';
+				// Espera formato 'YYYY-MM-DD HH:MM:SS' o similar
+				let d = new Date(fechaStr.replace(' ', 'T'));
+				if (isNaN(d)) return fechaStr;
+				let y = d.getFullYear();
+				let m = (d.getMonth()+1).toString().padStart(2,'0');
+				let day = d.getDate().toString().padStart(2,'0');
+				let h = d.getHours().toString().padStart(2,'0');
+				let min = d.getMinutes().toString().padStart(2,'0');
+				let s = d.getSeconds().toString().padStart(2,'0');
+				return `${y}-${m}-${day} ${h}:${min}:${s}`;
+			}
+			// Formatear duración tipo '0:00:01.123456' o similar a hh:mm:ss
+			function formatDuracion(dur) {
+				if (!dur) return '';
+				// Si es negativo o raro, mostrar '-'
+				if (dur.includes('-')) return '-';
+				let partes = dur.split(':');
+				if (partes.length < 3) return dur;
+				let h = partes[0].padStart(2,'0');
+				let m = partes[1].padStart(2,'0');
+				let s = partes[2].split('.')[0].padStart(2,'0');
+				return `${h}:${m}:${s}`;
+			}
+			let fecha = info.hora_inicio ? formatFecha(info.hora_inicio) : (info.timestamp ? formatFecha(info.timestamp) : '');
+			let fin = info.hora_fin ? formatFecha(info.hora_fin) : '';
+			let duracion = info.duracion ? formatDuracion(info.duracion) : '';
+			let dominio = info.dominio || '';
+			let msg = data.error ? data.error : (data.status === 'SUCCESS' ? 'Finalizado correctamente' : '');
+			cont.innerHTML = `<div class='d-flex align-items-center gap-2 small border rounded px-2 py-1 bg-light' style='max-width:700px;'>
+				<span class='text-${color}'>${icon}</span>
+				<span class='fw-bold text-dark'>${dominio}</span>
+				<span class='badge bg-${color}'>${estado}</span>
+				<span class='text-muted'>ID: ${info.id || ''}</span>
+				<span class='text-muted'>Inicio: ${fecha}</span>
+				${fin ? `<span class='text-muted'>Fin: ${fin}</span>` : ''}
+				${duracion ? `<span class='text-muted'>Duración: ${duracion}</span>` : ''}
+				<span class='text-muted'>por ${info.usuario || '-'}</span>
+				<span class='badge bg-info ms-2'>${info.total_urls || 0} URLs</span>
+				<span class='text-muted ms-2'>${msg}</span>
+			</div>`;
+		});
+	}
+	cargarUltimoProcesoMini();
 	const checkTodos = document.getElementById('check-todos');
 	const checks = document.querySelectorAll('.eliminar-checkbox');
 	if (checkTodos) {
@@ -74,7 +174,57 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
-	// AJAX crawling con progreso
+	// Progreso siempre visible: cargar último progreso si existe
+	function cargarUltimoProgreso() {
+		fetch('/analisis/estado/', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+		.then(r => r.json())
+		.then(data => {
+			const barraProgreso = document.getElementById('barra-progreso');
+			const spanUrls = document.getElementById('progreso-urls');
+			const spanUltima = document.getElementById('progreso-ultima');
+			const divProgreso = document.getElementById('progreso-crawling');
+			let total = data.progreso && data.progreso.total ? data.progreso.total : 0;
+			let urls = data.progreso && data.progreso.urls ? data.progreso.urls : [];
+			let ultima = urls.length > 0 ? urls[urls.length-1] : '';
+			let porcentaje = data.progreso && data.progreso.porcentaje ? data.progreso.porcentaje : (total > 0 ? Math.min(100, total) : 0);
+			barraProgreso.style.width = porcentaje + '%';
+			barraProgreso.textContent = porcentaje + '%';
+			spanUrls.textContent = 'URLs encontradas: ' + total;
+			spanUltima.textContent = ultima ? 'Última: ' + ultima : '';
+
+			// Ocultar progreso si terminó
+			if (["SUCCESS", "FAILURE", "REVOKED"].includes(data.status)) {
+				divProgreso.style.display = 'none';
+			} else {
+				divProgreso.style.display = '';
+			}
+			// Mostrar hora inicio, fin y duración si existen
+			let info = data.result || (data.progreso && Object.keys(data.progreso).length ? data.progreso : null);
+			const barraInfo = document.getElementById('barra-info-tiempo');
+			if (barraInfo && info) {
+				let inicio = info.hora_inicio || '';
+				let fin = info.hora_fin || '';
+				let duracion = info.duracion || '';
+				barraInfo.innerHTML = `<span class='text-muted me-2'>Inicio: ${inicio}</span>` +
+					(fin ? `<span class='text-muted me-2'>Fin: ${fin}</span>` : '') +
+					(duracion ? `<span class='text-muted'>Duración: ${duracion}</span>` : '');
+			}
+			const estadoIcono = document.getElementById('progreso-estado-icono');
+			// No recargar aquí, solo actualizar visualmente
+			if (data.status === 'SUCCESS') {
+				estadoIcono.innerHTML = '<span class="badge bg-success"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-check-circle-fill me-1" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 11.03a.75.75 0 0 0 1.07 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 9.439 6.03 7.97a.75.75 0 1 0-1.06 1.06l1.5 1.5z"/></svg>Completado</span>';
+			} else if (data.status === 'FAILURE') {
+				estadoIcono.innerHTML = '<span class="badge bg-danger"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-x-circle-fill me-1" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>Error</span>';
+			} else if (data.status === 'REVOKED') {
+				estadoIcono.innerHTML = '<span class="badge bg-warning text-dark"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-exclamation-triangle-fill me-1" viewBox="0 0 16 16"><path d="M8 0c-.69 0-1.342.352-1.732.928L.165 13.233C-.226 13.81.226 14.5.893 14.5h14.214c.667 0 1.119-.69.728-1.267L9.732.928A1.99 1.99 0 0 0 8 0zm.93 4.412-1 6A.5.5 0 0 1 7.5 11h-1a.5.5 0 0 1-.5-.588l1-6A.5.5 0 0 1 7.5 4h1a.5.5 0 0 1 .5.588zM8 13a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>Cancelado</span>';
+			} else {
+				estadoIcono.innerHTML = '<span class="badge bg-info text-dark"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-arrow-repeat me-1" viewBox="0 0 16 16"><path d="M2 2a.5.5 0 0 1 .5.5V5a.5.5 0 0 1-1 0V2.707l-.146.147a.5.5 0 0 1-.708-.708l1-1a.5.5 0 0 1 .708 0l1 1a.5.5 0 0 1-.708.708L2.5 2.707V5a.5.5 0 0 1-1 0V2.5A.5.5 0 0 1 2 2zm12 12a.5.5 0 0 1-.5-.5V11a.5.5 0 0 1 1 0v2.293l.146-.147a.5.5 0 0 1 .708.708l-1 1a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.146.147V11a.5.5 0 0 1 1 0v2.5a.5.5 0 0 1-.5.5z"/></svg>En progreso</span>';
+			}
+		});
+	}
+	cargarUltimoProgreso();
+
+	// AJAX crawling con progreso (igual que antes)
 	const formCrawling = document.getElementById('form-crawling');
 	const barraProgreso = document.getElementById('barra-progreso');
 	const divProgreso = document.getElementById('progreso-crawling');
@@ -85,11 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	formCrawling.addEventListener('submit', function(e) {
 		e.preventDefault();
 		const formData = new FormData(formCrawling);
-		divProgreso.style.display = 'block';
 		barraProgreso.style.width = '0%';
 		barraProgreso.textContent = '0%';
 		spanUrls.textContent = 'URLs encontradas: 0';
 		spanUltima.textContent = '';
+		// Mostrar la tarjeta de progreso al iniciar una nueva búsqueda
+		divProgreso.style.display = '';
 		if (polling) clearInterval(polling);
 
 		fetch('/crawling/iniciar/', {
@@ -118,8 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
 								barraProgreso.style.width = '100%';
 								barraProgreso.textContent = '100%';
 								clearInterval(polling);
-								// Opcional: recargar la página para mostrar el nuevo resultado
-								setTimeout(() => { window.location.reload(); }, 1500);
+								// Recargar la página para mostrar los datos actualizados
+								setTimeout(() => { window.location.reload(); }, 1200);
 							}
 						});
 				}, 1000);

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-3">Progreso del análisis de dominio</h2>
+    <div class="card shadow-sm border-primary mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+                <span class="me-2" style="font-size:1.5em;color:#0d6efd;">
+                    <i class="bi bi-globe"></i>
+                </span>
+                <h5 class="mb-0">Dominio: <span id="dominio-mini"></span></h5>
+            </div>
+            <div class="progress mb-2" style="height: 1.5rem;">
+                <div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-info fw-bold" role="progressbar" style="width: 0%">0%</div>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <span id="progreso-urls" class="badge bg-primary fs-6">URLs encontradas: 0</span>
+                </div>
+                <div class="col-auto">
+                    <span id="progreso-estado" class="text-muted small"></span>
+                </div>
+            </div>
+            <div id="progreso-error" class="mt-2"></div>
+        </div>
+    </div>
+    <div id="resumen-final" style="display:none">
+        <div class="alert alert-success"><b>¡Análisis completado!</b></div>
+        <div id="resumen-contenido"></div>
+    </div>
+</div>
+<script>
+    const taskId = "{{ task_id }}";
+    function renderResumen(data) {
+        let html = '';
+        if (data && data.resultados) {
+            html += `<div><b>Total URLs encontradas:</b> ${data.total_urls || data.resultados.length}</div>`;
+            html += `<div><b>Sitemap:</b> ${data.sitemap_url ? `<a href='${data.sitemap_url}' target='_blank'>${data.sitemap_url}</a>` : 'No encontrado'}</div>`;
+            html += `<ul class='mt-2'>`;
+            for (const r of data.resultados.slice(0, 10)) {
+                html += `<li><code>${r.url}</code> <span class='badge bg-success'>${r.estado}</span></li>`;
+            }
+            if (data.resultados.length > 10) html += `<li>...y ${data.resultados.length-10} más</li>`;
+            html += `</ul>`;
+        } else {
+            html += `<div>No se encontraron resultados.</div>`;
+        }
+        document.getElementById('resumen-contenido').innerHTML = html;
+    }
+    function checkEstado() {
+        fetch(window.location.pathname + '?task_id=' + taskId, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            let progreso = data.result || data;
+            if (progreso && progreso.dominio) {
+                document.getElementById('dominio-mini').innerText = progreso.dominio;
+            }
+            let urls = progreso && progreso.urls ? progreso.urls.length : (progreso.total_urls || 0);
+            document.getElementById('progreso-urls').innerText = `URLs encontradas: ${urls}`;
+            let pct = urls && urls > 0 ? Math.min(100, Math.round((urls/100)*100)) : 0;
+            document.getElementById('barra-progreso').style.width = pct + '%';
+            document.getElementById('barra-progreso').innerText = pct + '%';
+            document.getElementById('progreso-estado').innerText = progreso.status || data.status;
+            if (progreso.error || data.error) {
+                document.getElementById('progreso-error').innerHTML = `<div class='alert alert-danger'>${progreso.error || data.error}</div>`;
+            } else {
+                document.getElementById('progreso-error').innerHTML = '';
+            }
+            if ((progreso.status || data.status) === 'SUCCESS') {
+                document.getElementById('resumen-final').style.display = '';
+                renderResumen(progreso);
+            } else if ((progreso.status || data.status) === 'FAILURE') {
+                document.getElementById('resumen-final').style.display = '';
+                document.getElementById('resumen-contenido').innerHTML = `<div class='alert alert-danger'>${progreso.error || data.error || 'Error desconocido.'}</div>`;
+            } else {
+                setTimeout(checkEstado, 2000);
+            }
+        });
+    }
+    checkEstado();
+</script>
+{% endblock %}

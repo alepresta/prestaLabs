@@ -18,6 +18,9 @@ class BusquedaDominio(BaseModel):
     dominio = models.CharField(max_length=255)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     fecha = models.DateTimeField(auto_now_add=True)
+    fecha_fin = models.DateTimeField(
+        null=True, blank=True, help_text="Hora de finalización del crawling"
+    )
     urls = models.TextField(
         help_text="Lista de URLs encontradas, separadas por salto de línea"
     )

@@ -5,6 +5,10 @@ from decouple import config
 CSRF_TRUSTED_ORIGINS = [
     "https://ideal-xylophone-v69xq754gvjhw9qj-5001.app.github.dev",
     "https://localhost:5001",
+    "https://localhost:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
 ]
 """
 Django settings for prestaLabs project.
@@ -118,8 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "es-ES"
 
+# Zona horaria del servidor (usada para todas las fechas)
+LANGUAGE_CODE = "es-ES"
 TIME_ZONE = "America/Argentina/Buenos_Aires"
 
 USE_I18N = True

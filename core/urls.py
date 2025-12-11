@@ -1,5 +1,6 @@
 # Eliminado bloque incorrecto y duplicado
 from django.urls import path
+
 from .views_app import (
     index,
     api_status,
@@ -18,6 +19,7 @@ from .views_app import (
     iniciar_crawling_ajax,
     progreso_crawling_ajax,
 )
+from core.views.analisis_estado import analisis_estado
 
 urlpatterns = [
     path("", index, name="index"),
@@ -61,5 +63,6 @@ urlpatterns = [
     ),
     path("crawling/iniciar/", iniciar_crawling_ajax, name="iniciar_crawling_ajax"),
     path("crawling/progreso/", progreso_crawling_ajax, name="progreso_crawling_ajax"),
+    path("analisis/estado/", analisis_estado, name="analisis_estado"),
     # path("analisis/historial/", historial_busquedas, name="historial_busquedas"),
 ]
