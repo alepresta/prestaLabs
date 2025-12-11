@@ -15,6 +15,8 @@ from .views_app import (
     nuevo_reporte_view,
     listar_usuarios_view,
     admin_set_password_view,
+    iniciar_crawling_ajax,
+    progreso_crawling_ajax,
 )
 
 urlpatterns = [
@@ -57,5 +59,7 @@ urlpatterns = [
         admin_set_password_view,
         name="admin_set_password",
     ),
+    path("crawling/iniciar/", iniciar_crawling_ajax, name="iniciar_crawling_ajax"),
+    path("crawling/progreso/", progreso_crawling_ajax, name="progreso_crawling_ajax"),
     # path("analisis/historial/", historial_busquedas, name="historial_busquedas"),
 ]

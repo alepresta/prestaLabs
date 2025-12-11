@@ -3,25 +3,129 @@
 {% block content %}
 <h2>Análisis de Dominio</h2>
 
-<form method="post" class="mb-4">
+
+<form id="form-crawling" class="mb-4">
 	{% csrf_token %}
 	{{ form.as_p }}
+	<div class="mb-2">
+		<label for="id_limite_urls" class="form-label">Límite de URLs a recorrer (dejar vacío para sin límite):</label>
+		<input type="number" min="1" name="limite_urls" id="id_limite_urls" class="form-control" placeholder="Ej: 100">
+	</div>
+	<div class="alert alert-warning mt-2">
+		<strong>Advertencia:</strong> Si dejas el límite vacío, el crawling puede demorar mucho y consumir muchos recursos en sitios grandes.
+	</div>
 	<button type="submit" class="btn btn-primary">Buscar dominio</button>
 </form>
+
+<div id="progreso-crawling" class="my-3" style="display:none;">
+	<div class="progress">
+		<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+	</div>
+	<div class="mt-2">
+		<span id="progreso-urls">URLs encontradas: 0</span>
+		<span id="progreso-ultima" class="text-muted small"></span>
+	</div>
+</div>
 
 {% if mensaje %}
 	<div class="alert alert-info">{{ mensaje }}</div>
 {% endif %}
 
 <h4>Dominios buscados</h4>
-<ul class="list-group mb-4">
-	{% for d in dominios_tabla %}
-		<li class="list-group-item">
-			{{ d.dominio }}
-			<a href="/analisis/detalle/?dominio={{ d.dominio }}" class="btn btn-sm btn-outline-info float-end">Ver URLs</a>
+<div class="mb-2 text-muted">Total registros encontrados: {{ dominios_tabla|length }}</div>
+<form method="post" action="" id="form-eliminar-busquedas">
+	{% csrf_token %}
+	<div class="mb-2">
+		<input type="checkbox" id="check-todos" class="form-check-input me-2">
+		<label for="check-todos" class="form-label mb-0">Seleccionar todos</label>
+	</div>
+	<ul class="list-group mb-4">
+		{% for d in dominios_tabla %}
+		<li class="list-group-item" data-id="{{ d.id }}">
+			<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+				<div class="d-flex align-items-center">
+					<input type="checkbox" name="eliminar_ids" value="{{ d.id }}" class="form-check-input me-2 eliminar-checkbox">
+					<span class="badge bg-secondary me-2">ID {{ d.id }}</span>
+					<strong>{{ d.dominio }}</strong>
+					<span class="text-muted small ms-2">({{ d.fecha|date:"d/m/Y H:i" }})</span>
+					<span class="text-muted small ms-2">por {{ d.usuario }}</span>
+					<span class="badge bg-info ms-2">{{ d.urls|linebreaksbr|length }} URLs</span>
+				</div>
+				<div>
+					<a href="/analisis/detalle/?id={{ d.id }}" class="btn btn-sm btn-outline-info ms-md-3 mt-2 mt-md-0">Ver URLs</a>
+					<button type="submit" name="eliminar_individual" value="{{ d.id }}" class="btn btn-sm btn-outline-danger ms-2">Eliminar</button>
+				</div>
+			</div>
 		</li>
-	{% empty %}
+		{% empty %}
 		<li class="list-group-item">No se han buscado dominios aún.</li>
-	{% endfor %}
-</ul>
+		{% endfor %}
+	</ul>
+	<button type="submit" name="eliminar_seleccionados" class="btn btn-danger mt-2">Eliminar seleccionados</button>
+</form>
+<script>
+// Checkbox maestro para seleccionar/deseleccionar todos
+document.addEventListener('DOMContentLoaded', function() {
+	const checkTodos = document.getElementById('check-todos');
+	const checks = document.querySelectorAll('.eliminar-checkbox');
+	if (checkTodos) {
+		checkTodos.addEventListener('change', function() {
+			checks.forEach(chk => { chk.checked = checkTodos.checked; });
+		});
+	}
+
+	// AJAX crawling con progreso
+	const formCrawling = document.getElementById('form-crawling');
+	const barraProgreso = document.getElementById('barra-progreso');
+	const divProgreso = document.getElementById('progreso-crawling');
+	const spanUrls = document.getElementById('progreso-urls');
+	const spanUltima = document.getElementById('progreso-ultima');
+	let polling = null;
+
+	formCrawling.addEventListener('submit', function(e) {
+		e.preventDefault();
+		const formData = new FormData(formCrawling);
+		divProgreso.style.display = 'block';
+		barraProgreso.style.width = '0%';
+		barraProgreso.textContent = '0%';
+		spanUrls.textContent = 'URLs encontradas: 0';
+		spanUltima.textContent = '';
+		if (polling) clearInterval(polling);
+
+		fetch('/crawling/iniciar/', {
+			method: 'POST',
+			headers: {
+				'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+			},
+			body: formData
+		})
+		.then(resp => resp.json())
+		.then(data => {
+			if (data.progress_key) {
+				polling = setInterval(() => {
+					fetch(`/crawling/progreso/?progress_key=${data.progress_key}`)
+						.then(r => r.json())
+						.then(prog => {
+							let count = prog.count || 0;
+							let done = prog.done;
+							let last = prog.last || '';
+							let percent = done ? 100 : Math.min(99, count);
+							barraProgreso.style.width = percent + '%';
+							barraProgreso.textContent = percent + '%';
+							spanUrls.textContent = `URLs encontradas: ${count}`;
+							spanUltima.textContent = last ? `Última: ${last}` : '';
+							if (done) {
+								barraProgreso.style.width = '100%';
+								barraProgreso.textContent = '100%';
+								clearInterval(polling);
+								// Opcional: recargar la página para mostrar el nuevo resultado
+								setTimeout(() => { window.location.reload(); }, 1500);
+							}
+						});
+				}, 1000);
+			}
+		});
+	});
+});
+</script>
 {% endblock %}

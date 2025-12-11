@@ -6,35 +6,40 @@
     <form method="post" class="mt-3">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="dominio" class="form-label">Dominio</label>
-            <input type="text" class="form-control" id="dominio" name="dominio" placeholder="ejemplo.com" required>
+            {{ form.dominio.label_tag }}
+            {{ form.dominio|add_class:'form-control' }}
+            {% if form.dominio.errors %}
+                <div class="text-danger small">{{ form.dominio.errors.0 }}</div>
+            {% endif %}
         </div>
         <button type="submit" class="btn btn-primary">Analizar</button>
     </form>
+    {% if mensaje %}
+        <div class="alert alert-info mt-3">{{ mensaje }}</div>
+    {% endif %}
     {% if error %}
         <div class="alert alert-danger mt-3">{{ error }}</div>
     {% endif %}
     <hr>
     <h4>Dominios buscados</h4>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Dominio</th>
-                <th>Hora</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for d in dominios_tabla %}
-                <tr>
-                    <td>{{ d.id }}</td>
-                    <td>{{ d.dominio }}</td>
-                    <td>{% if d.fecha %}{{ d.fecha|date:"Y-m-d H:i:s" }}{% else %}-{% endif %}</td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="3">No se han buscado dominios aún.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <ul class="list-group mb-4">
+        {% for d in dominios_tabla %}
+        <li class="list-group-item">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div>
+                    <span class="badge bg-secondary me-2">ID {{ d.id }}</span>
+                    <strong>{{ d.dominio }}</strong>
+                    <span class="text-muted small ms-2">({{ d.fecha|date:"d/m/Y H:i" }})</span>
+                    <span class="text-muted small ms-2">por {{ d.usuario }}</span>
+                </div>
+                <div>
+                    <a href="/analisis/detalle/?dominio={{ d.dominio }}" class="btn btn-sm btn-outline-info ms-md-3 mt-2 mt-md-0">Ver URLs</a>
+                </div>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">No se han buscado dominios aún.</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

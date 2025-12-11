@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Detalle de búsqueda</h2>
+    {% if error %}
+        <div class="alert alert-warning">{{ error }}</div>
+    {% elif busquedas and busquedas|length > 0 %}
+        <div class="mb-4">
+            <h5>Dominio: <strong>{{ dominio }}</strong></h5>
+            <span class="text-muted">ID búsqueda: {{ busquedas.0.id }}</span><br>
+            <span class="text-info">URLs encontradas: {{ busquedas.0.get_urls|length }}</span>
+        </div>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Fecha y hora</th>
+                    <th>Usuario</th>
+                    <th>URLs encontradas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in busquedas %}
+                <tr>
+                    <td>{{ b.fecha|date:'d/m/Y H:i' }}</td>
+                    <td>{% if b.usuario %}{{ b.usuario.username }}{% else %}<em>Desconocido</em>{% endif %}</td>
+                    <td>
+                        {% if b.get_urls %}
+                            <ul class="mb-0">
+                                {% for url in b.get_urls %}
+                                    <li>{{ url }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <em>No se encontraron URLs</em>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No se encontraron búsquedas para este dominio.</div>
+    {% endif %}
+    <a href="/analisis/dominio/" class="btn btn-secondary mt-3">&larr; Volver al análisis de dominios</a>
+</div>
+{% endblock %}
