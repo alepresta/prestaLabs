@@ -9,6 +9,67 @@
 {% block content %}
 <div class="container py-5">
 
+    <!-- Estadísticas de Dominios Bloqueados -->
+    {% if blocked_stats %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">
+                <i class="bi bi-shield-fill-check me-2"></i>
+                Estado del Sistema de Crawling (Últimas 24h)
+            </h2>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-search display-4 text-primary mb-2"></i>
+                    <h4 class="text-primary">{{ blocked_stats.total_searches }}</h4>
+                    <p class="text-muted mb-0">Búsquedas Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill display-4 text-success mb-2"></i>
+                    <h4 class="text-success">{{ blocked_stats.successful_domains }}</h4>
+                    <p class="text-muted mb-0">Dominios Exitosos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-fill display-4 text-warning mb-2"></i>
+                    <h4 class="text-warning">{{ blocked_stats.timeout_domains }}</h4>
+                    <p class="text-muted mb-0">Timeouts/Conexión</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-fill-x display-4 text-danger mb-2"></i>
+                    <h4 class="text-danger">{{ blocked_stats.blocked_domains }}</h4>
+                    <p class="text-muted mb-0">Dominios Bloqueados</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if blocked_stats.common_blocked %}
+        <div class="col-12 mt-4">
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Dominios frecuentemente bloqueados:</h6>
+                <p class="mb-0">
+                    {% for domain in blocked_stats.common_blocked %}
+                        <span class="badge bg-secondary me-2">{{ domain }}</span>
+                    {% endfor %}
+                </p>
+                <small class="text-muted">Estos dominios tienen protección anti-bot activa y es normal que retornen 0 URLs.</small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
     <!-- Tarjetas de Módulos Principales -->
     <div class="row">
