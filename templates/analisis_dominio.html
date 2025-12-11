@@ -1,96 +1,189 @@
+
 {% extends 'base.html' %}
 {% block title %}Análisis de Dominio | PrestaLabs{% endblock %}
 {% block content %}
-<h2>Análisis de Dominio</h2>
-
-
-<form id="form-crawling" class="mb-4">
-	{% csrf_token %}
-	{{ form.as_p }}
-	<div class="mb-2">
-		<label for="id_limite_urls" class="form-label">Límite de URLs a recorrer (dejar vacío para sin límite):</label>
-		<input type="number" min="1" name="limite_urls" id="id_limite_urls" class="form-control" placeholder="Ej: 100">
-	</div>
-	<div class="alert alert-warning mt-2">
-		<strong>Advertencia:</strong> Si dejas el límite vacío, el crawling puede demorar mucho y consumir muchos recursos en sitios grandes.
-	</div>
-	<button type="submit" class="btn btn-primary">Buscar dominio</button>
-</form>
-
-<div id="ultimo-proceso-mini" class="mb-2"></div>
-<div id="progreso-crawling" class="my-3">
-	<div class="card shadow-sm border-primary">
-		<div class="card-body">
-			<div class="d-flex align-items-center mb-2">
-				<span class="me-2" style="font-size:1.5em;color:#0d6efd;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-globe" viewBox="0 0 16 16">
-						<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0 0 14A7 7 0 0 0 8 1z"/>
-						<path d="M8 1a7 7 0 0 0 0 14V1z"/>
-					</svg>
-				</span>
-				<h5 class="mb-0">Progreso de Crawling de Dominio</h5>
-			</div>
-			<div class="progress mb-2" style="height: 1.5rem;">
-				<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-info fw-bold" role="progressbar" style="width: 0%">0%</div>
-			</div>
-			<div id="barra-info-tiempo" class="mb-2 small"></div>
-			</div>
-			<div class="row align-items-center">
-				<div class="col-auto">
-					<span id="progreso-urls" class="badge bg-primary fs-6">URLs encontradas: 0</span>
+<div class="container-xl py-3">
+	<div class="row mb-4">
+		<div class="col-lg-7 mx-auto">
+			<div class="card border-0 bg-light mb-4">
+				<div class="card-body p-3">
+					<h3 class="mb-3 fw-bold text-dark" style="font-size:1.2rem;"><i class="bi bi-globe2 me-2"></i> Análisis de Dominio</h3>
+					<form id="form-crawling" class="row g-2 align-items-center" style="font-size:0.95em;">
+						{% csrf_token %}
+						<div class="col-md-7">
+							<label for="id_dominio" class="form-label mb-1">Dominio</label>
+							<input type="text" name="dominio" maxlength="255" required class="form-control form-control-sm" id="id_dominio" placeholder="ejemplo.com">
+							<small class="text-muted">Ejemplo: ejemplo.com</small>
+						</div>
+						<div class="col-md-3">
+							<label for="id_limite_urls" class="form-label mb-1">Límite de URLs</label>
+							<input type="number" min="1" name="limite_urls" id="id_limite_urls" class="form-control form-control-sm" placeholder="Ej: 100">
+						</div>
+						<div class="col-md-2 text-end">
+							<button type="submit" class="btn btn-outline-dark btn-sm px-3">Buscar</button>
+						</div>
+						<div class="col-12 mt-2">
+							<div class="alert alert-secondary py-1 mb-0" style="font-size:0.9em;">
+								<span class="fw-normal">Si dejas el límite vacío, el crawling puede demorar mucho y consumir más recursos.</span>
+							</div>
+						</div>
+					</form>
 				</div>
-				<div class="col-auto">
-					<span id="progreso-ultima" class="text-muted small"></span>
-				</div>
-				<div class="col-auto" id="progreso-estado-icono"></div>
 			</div>
 		</div>
 	</div>
-</div>
 
-{% if mensaje %}
-	<div class="alert alert-info">{{ mensaje }}</div>
-{% endif %}
-
-<h4>Dominios buscados</h4>
-<div class="mb-2 text-muted">Total registros encontrados: {{ dominios_tabla|length }}</div>
-<form method="post" action="" id="form-eliminar-busquedas">
-	{% csrf_token %}
-	<div class="mb-2">
-		<input type="checkbox" id="check-todos" class="form-check-input me-2">
-		<label for="check-todos" class="form-label mb-0">Seleccionar todos</label>
-	</div>
-	<ul class="list-group mb-4">
-		{% for d in dominios_tabla %}
-		<li class="list-group-item" data-id="{{ d.id }}">
-			<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-				<div class="d-flex align-items-center">
-					<input type="checkbox" name="eliminar_ids" value="{{ d.id }}" class="form-check-input me-2 eliminar-checkbox">
-					<span class="badge bg-secondary me-2">ID {{ d.id }}</span>
-					<strong>{{ d.dominio }}</strong>
-					<span class="text-muted small ms-2">Inicio: {{ d.inicio }}</span>
-					{% if d.fin %}<span class="text-muted small ms-2">Fin: {{ d.fin }}</span>{% endif %}
-					{% if d.duracion %}<span class="text-muted small ms-2">Duración: {{ d.duracion }}</span>{% endif %}
-					<span class="text-muted small ms-2">por {{ d.usuario }}</span>
-					<span class="badge bg-info ms-2">{{ d.total_urls }} URLs</span>
-					{% if d.estado == 'Finalizado' %}
-						<span class="badge bg-success ms-2">{{ d.estado }}</span>
-					{% else %}
-						<span class="badge bg-info ms-2">{{ d.estado }}</span>
-					{% endif %}
-				</div>
-				<div>
-					<a href="/analisis/detalle/?id={{ d.id }}" class="btn btn-sm btn-outline-info ms-md-3 mt-2 mt-md-0">Ver URLs</a>
-					<button type="submit" name="eliminar_individual" value="{{ d.id }}" class="btn btn-sm btn-outline-danger ms-2">Eliminar</button>
+	<div class="row mb-4">
+		<div class="col-lg-7 mx-auto">
+			<div id="ultimo-proceso-mini" class="mb-3"></div>
+			<div id="progreso-crawling" class="mb-4">
+				<div class="card border-info shadow-sm">
+					<div class="card-body">
+						<div class="d-flex align-items-center mb-2">
+							<span class="me-2" style="font-size:1.5em;color:#0d6efd;">
+								<i class="bi bi-globe"></i>
+							</span>
+							<h5 class="mb-0">Progreso de Crawling</h5>
+						</div>
+						<div class="progress mb-2" style="height: 1.5rem;">
+							<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-info fw-bold" role="progressbar" style="width: 0%">0%</div>
+						</div>
+						<div id="barra-info-tiempo" class="mb-2 small"></div>
+						<div class="row align-items-center">
+							<div class="col-auto">
+								<span id="progreso-urls" class="badge bg-primary fs-6">URLs encontradas: 0</span>
+							</div>
+							<div class="col-auto">
+								<span id="progreso-ultima" class="text-muted small"></span>
+							</div>
+							<div class="col-auto" id="progreso-estado-icono"></div>
+						</div>
+					</div>
 				</div>
 			</div>
-		</li>
-		{% empty %}
-		<li class="list-group-item">No se han buscado dominios aún.</li>
-		{% endfor %}
-	</ul>
-	<button type="submit" name="eliminar_seleccionados" class="btn btn-danger mt-2">Eliminar seleccionados</button>
-</form>
+		</div>
+	</div>
+
+	{% if mensaje %}
+		<div class="row mb-3">
+			<div class="col-lg-7 mx-auto">
+				<div class="alert alert-info">{{ mensaje }}</div>
+			</div>
+		</div>
+	{% endif %}
+
+	<div class="row">
+		<div class="col-lg-10 mx-auto">
+			<div class="d-flex justify-content-between align-items-center mb-2">
+				<h4 class="fw-bold mb-0"><i class="bi bi-list-check me-2"></i> Historial de búsquedas</h4>
+				<span class="text-muted">Total registros: {{ dominios_tabla|length }}</span>
+			</div>
+			<form method="post" action="" id="form-eliminar-busquedas">
+				{% csrf_token %}
+				<div class="mb-2">
+					<input type="checkbox" id="check-todos" class="form-check-input me-2">
+					<label for="check-todos" class="form-label mb-0">Seleccionar todos</label>
+				</div>
+				<div class="card border-0 bg-light mb-4">
+					<div class="card-body p-3">
+						<div class="table-responsive">
+							<table class="table table-hover align-middle bg-white rounded shadow-sm" style="font-size:1em;">
+								<thead class="table-light">
+									<tr>
+										<th class="text-center">#</th>
+										<th>Dominio</th>
+										<th>Usuario</th>
+										<th>Estado</th>
+										<th>Inicio</th>
+										<th>Fin</th>
+										<th>Duración</th>
+										<th>URLs</th>
+										<th class="text-center">Acciones</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for d in dominios_tabla %}
+									<tr data-id="{{ d.id }}" style="font-size:1em;">
+										<td class="text-center align-middle text-secondary"><input type="checkbox" name="eliminar_ids" value="{{ d.id }}" class="form-check-input eliminar-checkbox"><br>{{ d.id }}</td>
+										<td class="align-middle"><span class="fw-bold text-dark">{{ d.dominio }}</span></td>
+										<td class="align-middle text-secondary">{{ d.usuario }}</td>
+										<td class="align-middle text-secondary">{{ d.estado }}</td>
+										<td class="align-middle text-secondary">{{ d.inicio }}</td>
+										<td class="align-middle text-secondary">{{ d.fin }}</td>
+										<td class="align-middle text-secondary">{{ d.duracion }}</td>
+										<td class="align-middle text-secondary">{{ d.total_urls }}</td>
+										<td class="text-center align-middle">
+											<div class="dropdown">
+												<button class="btn btn-light btn-sm dropdown-toggle px-2 py-1" type="button" id="accionesDropdown{{ d.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="bi bi-three-dots-vertical" style="font-size:1.3em;"></i>
+												</button>
+												<ul class="dropdown-menu" aria-labelledby="accionesDropdown{{ d.id }}">
+													<li>
+														<a class="dropdown-item d-flex align-items-center" href="/analisis/detalle/?id={{ d.id }}">
+															<i class="bi bi-eye me-2 text-primary"></i> Ver URLs
+														</a>
+													</li>
+													<li>
+														<form method="post" action="" style="display:inline;">
+															{% csrf_token %}
+															<button type="submit" name="eliminar_individual" value="{{ d.id }}" class="dropdown-item d-flex align-items-center">
+																<i class="bi bi-trash me-2 text-danger"></i> Eliminar
+															</button>
+														</form>
+													</li>
+												</ul>
+											</div>
+										</td>
+									</tr>
+									{% empty %}
+									<tr><td colspan="9" class="text-center text-muted">No se han buscado dominios aún.</td></tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<button type="submit" name="eliminar_seleccionados" class="btn btn-danger mt-2">Eliminar seleccionados</button>
+			</form>
+
+			{% if page_obj.has_other_pages %}
+			<nav aria-label="Paginador de dominios" class="mt-3">
+				<ul class="pagination justify-content-center">
+					{% if page_obj.has_previous %}
+						<li class="page-item">
+							<a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						</li>
+					{% else %}
+						<li class="page-item disabled">
+							<span class="page-link">&laquo;</span>
+						</li>
+					{% endif %}
+					{% for num in page_obj.paginator.page_range %}
+						{% if page_obj.number == num %}
+							<li class="page-item active"><span class="page-link">{{ num }}</span></li>
+						{% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+							<li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+						{% endif %}
+					{% endfor %}
+					{% if page_obj.has_next %}
+						<li class="page-item">
+							<a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
+					{% else %}
+						<li class="page-item disabled">
+							<span class="page-link">&raquo;</span>
+						</li>
+					{% endif %}
+				</ul>
+			</nav>
+			{% endif %}
+		</div>
+	</div>
+</div>
 <script>
 // Checkbox maestro para seleccionar/deseleccionar todos
 document.addEventListener('DOMContentLoaded', function() {
@@ -151,17 +244,23 @@ document.addEventListener('DOMContentLoaded', function() {
 			let duracion = info.duracion ? formatDuracion(info.duracion) : '';
 			let dominio = info.dominio || '';
 			let msg = data.error ? data.error : (data.status === 'SUCCESS' ? 'Finalizado correctamente' : '');
-			cont.innerHTML = `<div class='d-flex align-items-center gap-2 small border rounded px-2 py-1 bg-light' style='max-width:700px;'>
-				<span class='text-${color}'>${icon}</span>
-				<span class='fw-bold text-dark'>${dominio}</span>
-				<span class='badge bg-${color}'>${estado}</span>
-				<span class='text-muted'>ID: ${info.id || ''}</span>
-				<span class='text-muted'>Inicio: ${fecha}</span>
-				${fin ? `<span class='text-muted'>Fin: ${fin}</span>` : ''}
-				${duracion ? `<span class='text-muted'>Duración: ${duracion}</span>` : ''}
-				<span class='text-muted'>por ${info.usuario || '-'}</span>
-				<span class='badge bg-info ms-2'>${info.total_urls || 0} URLs</span>
-				<span class='text-muted ms-2'>${msg}</span>
+			cont.innerHTML = `
+			<div class='card border-0 shadow-sm bg-light' style='max-width:700px;'>
+				<div class='card-body p-3'>
+					<h4 class='mb-2 fw-bold text-dark text-center' style='font-size:1.5rem;word-break:break-all;'>
+						<span class='text-dark'>${dominio}</span>
+					</h4>
+					<div class='text-center p-0 m-0' style='font-size:0.85em;line-height:1.1;'>
+						<span style='margin-right:10px;' class='text-dark'>ID: <strong>${info.id || ''}</strong></span>
+						<span style='margin-right:10px;' class='text-dark'>Usuario: <strong>${info.usuario || '-'}</strong></span>
+						<span style='margin-right:10px;' class='text-dark'>Estado: <strong>${estado}</strong></span>
+						<span style='margin-right:10px;' class='text-dark'>Inicio: <strong>${fecha}</strong></span>
+						${fin ? `<span style='margin-right:10px;' class='text-dark'>Fin: <strong>${fin}</strong></span>` : ''}
+						${duracion ? `<span style='margin-right:10px;' class='text-dark'>Duración: <strong>${duracion}</strong></span>` : ''}
+						<span style='margin-right:10px;' class='text-dark'>URLs: <strong>${info.total_urls || 0}</strong></span>
+					</div>
+					<div class='text-center mt-2'><span class='text-dark'>${msg}</span></div>
+				</div>
 			</div>`;
 		});
 	}
