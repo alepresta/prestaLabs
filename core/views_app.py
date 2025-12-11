@@ -101,8 +101,8 @@ def detect_blocking(response, url):
 def try_sitemap_fallback(domain):
     """Intenta obtener URLs del sitemap cuando el crawling falla"""
     # Limpiar el dominio de cualquier protocolo previo
-    clean_domain = domain.replace('https://', '').replace('http://', '').strip('/')
-    
+    clean_domain = domain.replace("https://", "").replace("http://", "").strip("/")
+
     print(f"[SITEMAP] Iniciando búsqueda de sitemap para {clean_domain}")
 
     sitemap_urls = [
@@ -511,13 +511,15 @@ def normalizar_dominio(dominio_raw):
 def crawl_urls(base_url, max_urls=None):
     """Función auxiliar mejorada para crawlear URLs de un dominio"""
     # Normalizar URL base
-    if not base_url.startswith(('http://', 'https://')):
+    if not base_url.startswith(("http://", "https://")):
         base_url = f"https://{base_url}"
-    
+
     visited = set()
     to_visit = [base_url]
     urls = []
-    domain = urlparse(base_url).netloc or base_url.replace('https://', '').replace('http://', '')
+    domain = urlparse(base_url).netloc or base_url.replace("https://", "").replace(
+        "http://", ""
+    )
     blocked_count = 0
     max_blocks = 3  # Máximo de bloqueos antes de cambiar estrategia
     crawl_delay = 1  # Delay inicial en segundos
@@ -540,11 +542,11 @@ def crawl_urls(base_url, max_urls=None):
                         print(
                             f"[CRAWL] Delay recomendado por robots.txt: {crawl_delay}s"
                         )
-                    except:
+                    except Exception:
                         pass
                 elif line.lower().strip().startswith("disallow: /"):
-                    print(f"[CRAWL] ⚠️ robots.txt prohíbe el crawling completo")
-    except:
+                    print("[CRAWL] ⚠️ robots.txt prohíbe el crawling completo")
+    except Exception:
         pass
 
     while to_visit and len(urls) < (max_urls or float("inf")):
@@ -832,13 +834,15 @@ def analisis_dominio_view(request):
                     # Generar mensaje informativo según el estado del crawling
                     from .recommendations import get_domain_recommendations
                     from django.utils.safestring import mark_safe
-                    
-                    base_msg = f"Dominio '{dominio}' analizado: {len(urls_encontradas)} URLs encontradas."
-                    recommendations = get_domain_recommendations(dominio, result)
 
-                    # Determinar clase CSS según el resultado
-                    message_class = "info"
-                    if crawl_status == "blocked_fallback_sitemap":
+                    base_msg = f"Dominio '{dominio}' analizado: {len(urls_encontradas)} URLs encontradas."
+                    # Crear diccionario result si no existe
+                    if 'result' not in locals():
+                        result = {
+                            'urls': urls_encontradas,
+                            'status': crawl_status,
+                            'blocked_count': blocked_count
+                        }
                         mensaje = f"{base_msg} ⚠️ Se detectó protección anti-bot, se usó sitemap como alternativa."
                         message_class = "warning"
                     elif crawl_status == "timeout_fallback_sitemap":
@@ -867,26 +871,30 @@ def analisis_dominio_view(request):
 
                     # Generar HTML para recomendaciones si existen
                     if recommendations:
-                        recommendations_html = f'''
+                        recommendations_html = f"""
                         <div class="domain-recommendations domain-{message_class}">
                             <div class="recommendation-title">
                                 <i class="bi bi-lightbulb-fill recommendation-icon"></i>
                                 Recomendaciones para {dominio}
                             </div>
-                        '''
-                        
+                        """
+
                         for rec in recommendations:
-                            recommendations_html += f'''
+                            recommendations_html += f"""
                             <div class="recommendation-item">
                                 <span class="recommendation-icon">{rec[:2]}</span>
                                 <span>{rec[2:]}</span>
                             </div>
-                            '''
-                        
-                        recommendations_html += '</div>'
-                        mensaje = mark_safe(f'<div class="crawl-message {message_class}">{mensaje}</div>{recommendations_html}')
+                            """
+
+                        recommendations_html += "</div>"
+                        mensaje = mark_safe(
+                            f'<div class="crawl-message {message_class}">{mensaje}</div>{recommendations_html}'
+                        )
                     else:
-                        mensaje = mark_safe(f'<div class="crawl-message {message_class}">{mensaje}</div>')
+                        mensaje = mark_safe(
+                            f'<div class="crawl-message {message_class}">{mensaje}</div>'
+                        )
 
     busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
     dominios_tabla = []
@@ -900,9 +908,9 @@ def analisis_dominio_view(request):
         estado = "En progreso"
         estado_detalle = ""
         estado_clase = "secondary"
-        
+
         total_urls = len(b.get_urls())
-        
+
         if fecha_fin:
             delta = fecha_fin - fecha_inicio
             total_seconds = int(delta.total_seconds())
@@ -914,27 +922,32 @@ def analisis_dominio_view(request):
                 s = total_seconds % 60
                 duracion = f"{h:02}:{m:02}:{s:02}"
             estado = "Finalizado"
-            
+
             # Determinar estado específico basado en resultados
             if total_urls == 0 and total_seconds <= 2:
                 # Probablemente bloqueado (finaliza muy rápido con 0 URLs)
-                if dom_norm.lower() in ['udemy.com', 'netflix.com', 'hulu.com', 'disney.com']:
+                if dom_norm.lower() in [
+                    "udemy.com",
+                    "netflix.com",
+                    "hulu.com",
+                    "disney.com",
+                ]:
                     estado_detalle = "🛡️ Dominio completamente protegido"
                     estado_clase = "danger"
                 else:
                     estado_detalle = "⚠️ Posible bloqueo o error"
                     estado_clase = "warning"
             elif total_urls == 0 and total_seconds > 15:
-                estado_detalle = "⏰ Timeout o problemas de conexión"  
+                estado_detalle = "⏰ Timeout o problemas de conexión"
                 estado_clase = "warning"
             elif total_urls == 0 and 3 <= total_seconds <= 15:
                 # Casos como jw.org: intenta crawling pero no encuentra sitemap
-                if 'jw.org' in dom_norm.lower():
+                if "jw.org" in dom_norm.lower():
                     estado_detalle = "🔒 Restricciones de acceso o geobloqueo"
                     estado_clase = "warning"
-                elif any(keyword in dom_norm.lower() for keyword in ['redlink', 'hb.']):
+                elif any(keyword in dom_norm.lower() for keyword in ["redlink", "hb."]):
                     estado_detalle = "🌐 Error de conexión o dominio inaccesible"
-                    estado_clase = "warning" 
+                    estado_clase = "warning"
                 else:
                     estado_detalle = "🔍 Sin sitemap encontrado"
                     estado_clase = "info"
@@ -943,14 +956,14 @@ def analisis_dominio_view(request):
                 estado_clase = "success"
             elif total_urls > 0:
                 estado_detalle = "✅ Crawling exitoso"
-                estado_clase = "success" 
+                estado_clase = "success"
             else:
                 estado_detalle = "ℹ️ Finalizado"
                 estado_clase = "info"
         else:
             estado_detalle = "🔄 En curso..."
             estado_clase = "primary"
-            
+
         dominios_tabla.append(
             {
                 "id": b.id,
@@ -1031,22 +1044,22 @@ def analisis_url_view(request):
 def dashboard_view(request):
     """Vista del dashboard con estadísticas de dominios bloqueados"""
     from .recommendations import get_blocked_domains_stats
-    
+
     # Obtener estadísticas de dominios bloqueados
     blocked_stats = get_blocked_domains_stats()
-    
+
     # Obtener búsquedas recientes (últimas 10)
     recent_searches = BusquedaDominio.objects.order_by("-fecha")[:10]
-    
+
     # Calcular métricas generales
     total_searches_all_time = BusquedaDominio.objects.count()
-    
+
     context = {
-        'blocked_stats': blocked_stats,
-        'recent_searches': recent_searches,
-        'total_searches_all_time': total_searches_all_time,
+        "blocked_stats": blocked_stats,
+        "recent_searches": recent_searches,
+        "total_searches_all_time": total_searches_all_time,
     }
-    
+
     return render(request, "dashboard/index.html", context)
 
 
