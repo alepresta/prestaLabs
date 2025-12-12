@@ -29,6 +29,9 @@ class CrawlingProgress(BaseModel):
     busqueda_id = models.IntegerField(
         null=True, blank=True, help_text="ID de BusquedaDominio relacionado"
     )
+    task_id = models.CharField(
+        max_length=255, null=True, blank=True, help_text="ID de la tarea Celery"
+    )
 
     def get_urls_list(self):
         return self.urls_found.split("|") if self.urls_found else []

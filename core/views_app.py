@@ -1116,36 +1116,57 @@ def analisis_dominio_view(request):
                 mensaje = "No se encontró el proceso de crawling activo"
         elif "eliminar_individual" in request.POST:
             eliminar_id = request.POST.get("eliminar_individual")
-            # Eliminar registros relacionados en orden correcto
-            from django.db import connection
-
-            cursor = connection.cursor()
-            # Eliminar de core_analisisurl si existe
-            cursor.execute(
-                "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id]
-            )
-            # Eliminar de CrawlingProgress
-            CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
-            # Finalmente eliminar la BusquedaDominio
-            BusquedaDominio.objects.filter(id=eliminar_id).delete()
-            mensaje = "Búsqueda eliminada correctamente."
-        elif "eliminar_seleccionados" in request.POST or "eliminar_ids" in request.POST:
-            ids = request.POST.getlist("eliminar_ids")
-            if ids:  # Solo proceder si hay IDs seleccionados
+            
+            # Verificar si hay crawling activo para este dominio
+            try:
+                progress_obj = CrawlingProgress.objects.get(busqueda_id=eliminar_id, is_done=False)
+                mensaje = f"No se puede eliminar el análisis porque hay un proceso de crawling activo. Por favor espera a que termine o detén el proceso antes de eliminar."
+            except CrawlingProgress.DoesNotExist:
+                # Si no hay crawling activo, proceder con la eliminación
+                # Obtener el dominio antes de eliminarlo
+                try:
+                    busqueda_obj = BusquedaDominio.objects.get(id=eliminar_id)
+                    dominio_eliminado = busqueda_obj.dominio
+                except BusquedaDominio.DoesNotExist:
+                    dominio_eliminado = "desconocido"
+                
                 from django.db import connection
 
                 cursor = connection.cursor()
-                # Eliminar registros relacionados en orden correcto
-                for id_val in ids:
-                    # Eliminar de core_analisisurl si existe
-                    cursor.execute(
-                        "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val]
-                    )
+                # Eliminar de core_analisisurl si existe
+                cursor.execute(
+                    "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id]
+                )
                 # Eliminar de CrawlingProgress
-                CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
-                # Finalmente eliminar las BusquedaDominio
-                BusquedaDominio.objects.filter(id__in=ids).delete()
-                mensaje = f"{len(ids)} búsquedas eliminadas correctamente."
+                CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
+                # Finalmente eliminar la BusquedaDominio
+                BusquedaDominio.objects.filter(id=eliminar_id).delete()
+                mensaje = f"Búsqueda del dominio '{dominio_eliminado}' eliminada correctamente."
+        elif "eliminar_seleccionados" in request.POST or "eliminar_ids" in request.POST:
+            ids = request.POST.getlist("eliminar_ids")
+            if ids:  # Solo proceder si hay IDs seleccionados
+                
+                # Verificar si alguno tiene crawling activo
+                crawling_activo = CrawlingProgress.objects.filter(busqueda_id__in=ids, is_done=False).exists()
+                
+                if crawling_activo:
+                    mensaje = "No se pueden eliminar los análisis seleccionados porque hay procesos de crawling activos. Por favor espera a que terminen o detén los procesos antes de eliminar."
+                else:
+                    # Si no hay crawling activo, proceder con la eliminación
+                    from django.db import connection
+
+                    cursor = connection.cursor()
+                    # Eliminar registros relacionados en orden correcto
+                    for id_val in ids:
+                        # Eliminar de core_analisisurl si existe
+                        cursor.execute(
+                            "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val]
+                        )
+                    # Eliminar de CrawlingProgress
+                    CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
+                    # Finalmente eliminar las BusquedaDominio
+                    BusquedaDominio.objects.filter(id__in=ids).delete()
+                    mensaje = f"{len(ids)} búsquedas eliminadas correctamente."
             else:
                 mensaje = "No se seleccionaron elementos para eliminar."
         else:
