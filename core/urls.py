@@ -17,9 +17,12 @@ from .views_app import (
     listar_usuarios_view,
     admin_set_password_view,
     iniciar_crawling_ajax,
+    iniciar_crawling_multiple_ajax,
     progreso_crawling_ajax,
+    verificar_crawling_activo,
 )
 from core.views.analisis_estado import analisis_estado
+from core.views.test_views import test_session_recovery
 
 urlpatterns = [
     path("", index, name="index"),
@@ -62,7 +65,16 @@ urlpatterns = [
         name="admin_set_password",
     ),
     path("crawling/iniciar/", iniciar_crawling_ajax, name="iniciar_crawling_ajax"),
+    path(
+        "crawling/multiple/iniciar/",
+        iniciar_crawling_multiple_ajax,
+        name="iniciar_crawling_multiple_ajax",
+    ),
     path("crawling/progreso/", progreso_crawling_ajax, name="progreso_crawling_ajax"),
+    path(
+        "crawling/activo/", verificar_crawling_activo, name="verificar_crawling_activo"
+    ),
     path("analisis/estado/", analisis_estado, name="analisis_estado"),
+    path("test/session-recovery/", test_session_recovery, name="test_session_recovery"),
     # path("analisis/historial/", historial_busquedas, name="historial_busquedas"),
 ]

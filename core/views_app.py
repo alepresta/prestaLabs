@@ -14,10 +14,150 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import AdminSetPasswordForm, DominioForm
-from .models import BusquedaDominio
+from .models import BusquedaDominio, CrawlingProgress
 
 # Variable global temporal para progreso (en producción usar cache/db)
 crawling_progress = {}
+
+
+def limpiar_procesos_colgados():
+    """Limpia procesos de crawling que han quedado colgados"""
+    from django.utils import timezone
+
+    # Buscar procesos que no han sido actualizados en más de 10 minutos
+    hace_10min = timezone.now() - timezone.timedelta(minutes=10)
+
+    procesos_colgados = CrawlingProgress.objects.filter(
+        is_done=False, updated_at__lt=hace_10min
+    )
+
+    for proceso in procesos_colgados:
+        # Marcar como terminado
+        proceso.is_done = True
+        proceso.save()
+
+        # Actualizar también el BusquedaDominio correspondiente si existe
+        if proceso.busqueda_id:
+            try:
+                busqueda = BusquedaDominio.objects.get(id=proceso.busqueda_id)
+                if not busqueda.fecha_fin:
+                    busqueda.fecha_fin = timezone.now()
+                    # Guardar URLs del progreso si no existen en BusquedaDominio
+                    if proceso.count > 0 and not busqueda.urls:
+                        urls_list = proceso.get_urls_list()
+                        busqueda.urls = "\n".join(urls_list[: proceso.count])
+                    busqueda.save()
+            except BusquedaDominio.DoesNotExist:
+                pass
+
+    return procesos_colgados.count()
+
+
+def sincronizar_estados_crawling():
+    """Sincroniza los estados entre CrawlingProgress y BusquedaDominio"""
+    from django.utils import timezone
+
+    # Buscar CrawlingProgress terminados que tienen BusquedaDominio sin fecha_fin
+    progresos_terminados = CrawlingProgress.objects.filter(
+        is_done=True, busqueda_id__isnull=False
+    )
+
+    for progreso in progresos_terminados:
+        try:
+            busqueda = BusquedaDominio.objects.get(id=progreso.busqueda_id)
+            if not busqueda.fecha_fin:
+                busqueda.fecha_fin = timezone.now()
+                # Actualizar URLs si no existen
+                if progreso.count > 0 and not busqueda.urls:
+                    urls_list = progreso.get_urls_list()
+                    busqueda.urls = "\n".join(urls_list[: progreso.count])
+                busqueda.save()
+                print(f"[SYNC] Sincronizado BusquedaDominio ID {busqueda.id}")
+        except BusquedaDominio.DoesNotExist:
+            pass
+
+    # Buscar BusquedaDominio con fecha_fin que tienen CrawlingProgress sin terminar
+    busquedas_terminadas = BusquedaDominio.objects.filter(
+        fecha_fin__isnull=False
+    ).exclude(
+        id__in=CrawlingProgress.objects.filter(is_done=True).values_list(
+            "busqueda_id", flat=True
+        )
+    )
+
+    for busqueda in busquedas_terminadas:
+        progresos_activos = CrawlingProgress.objects.filter(
+            busqueda_id=busqueda.id, is_done=False
+        )
+        for progreso in progresos_activos:
+            progreso.is_done = True
+            progreso.save()
+            print(f"[SYNC] Marcado progreso como terminado: {progreso.progress_key}")
+
+
+def verificar_crawling_activo(request):
+    """Verifica si hay un crawling activo para el usuario"""
+    usuario = request.user if request.user.is_authenticated else None
+
+    # Primero limpiar procesos colgados y sincronizar estados
+    limpiados = limpiar_procesos_colgados()
+    if limpiados > 0:
+        print(f"[CLEANUP] Limpiados {limpiados} procesos colgados")
+
+    # Sincronizar estados entre CrawlingProgress y BusquedaDominio
+    sincronizar_estados_crawling()
+
+    # Buscar crawlings activos (no completados) de las últimas 24 horas
+    from django.utils import timezone
+
+    hace_24h = timezone.now() - timezone.timedelta(hours=24)
+
+    crawlings_activos = CrawlingProgress.objects.filter(
+        usuario=usuario, is_done=False, created_at__gte=hace_24h
+    ).order_by("-created_at")[:1]
+
+    if crawlings_activos:
+        progress_obj = crawlings_activos[0]
+
+        # Verificar si realmente está activo (actualizado en los últimos 5 minutos)
+        hace_5min = timezone.now() - timezone.timedelta(minutes=5)
+        if progress_obj.updated_at < hace_5min:
+            # Proceso probablemente abandonado, marcarlo como terminado
+            progress_obj.is_done = True
+            progress_obj.save()
+
+            # También actualizar BusquedaDominio si existe
+            if progress_obj.busqueda_id:
+                try:
+                    busqueda = BusquedaDominio.objects.get(id=progress_obj.busqueda_id)
+                    if not busqueda.fecha_fin:
+                        busqueda.fecha_fin = timezone.now()
+                        # Actualizar URLs con el progreso actual
+                        if progress_obj.count > 0 and not busqueda.urls:
+                            urls_list = progress_obj.get_urls_list()
+                            busqueda.urls = "\n".join(urls_list[: progress_obj.count])
+                        busqueda.save()
+                        print(
+                            f"[SYNC] Finalizado proceso abandonado: ID {busqueda.id}, URLs: {progress_obj.count}"
+                        )
+                except BusquedaDominio.DoesNotExist:
+                    pass
+
+            return JsonResponse({"active": False})
+
+        return JsonResponse(
+            {
+                "active": True,
+                "progress_key": progress_obj.progress_key,
+                "dominio": progress_obj.dominio,
+                "count": progress_obj.count,
+                "last": progress_obj.last_url,
+                "urls": progress_obj.get_urls_list(),
+            }
+        )
+
+    return JsonResponse({"active": False})
+
 
 # User-Agents rotativos para evitar detección
 USER_AGENTS = [
@@ -327,11 +467,21 @@ def crawl_urls_progress(base_url, max_urls, progress_key):
             print(f"[CRAWL] Enlaces encontrados en {url}: {len(enlaces)}")
             if enlaces:
                 print(f"[CRAWL] Primeros 5 enlaces: {enlaces[:5]}")
-            # Actualizar progreso
+            # Actualizar progreso en base de datos
+            progress_obj, created = CrawlingProgress.objects.get_or_create(
+                progress_key=progress_key, defaults={"dominio": domain, "usuario": None}
+            )
+            progress_obj.count = len(urls)
+            progress_obj.last_url = url
+            progress_obj.urls_found = "|".join(urls)
+            progress_obj.save()
+
+            # Mantener también en memoria para compatibilidad
             crawling_progress[progress_key] = {
                 "count": len(urls),
                 "last": url,
                 "done": False,
+                "urls": urls.copy(),
             }
             if max_urls and len(urls) >= max_urls:
                 break
@@ -356,11 +506,22 @@ def crawl_urls_progress(base_url, max_urls, progress_key):
         except Exception as e:
             print(f"[CRAWL][ERROR] {url}: {e}")
             continue  # nosec
+    # Actualizar progreso final en base de datos
+    progress_obj, created = CrawlingProgress.objects.get_or_create(
+        progress_key=progress_key, defaults={"dominio": domain, "usuario": None}
+    )
+    progress_obj.count = len(urls)
+    progress_obj.last_url = ""
+    progress_obj.urls_found = "|".join(urls)
+    progress_obj.is_done = True
+    progress_obj.save()
+
+    # Mantener también en memoria
     crawling_progress[progress_key] = {
         "count": len(urls),
         "last": None,
         "done": True,
-        "urls": urls,
+        "urls": urls.copy(),
     }
     return urls
 
@@ -401,7 +562,6 @@ def iniciar_crawling_ajax(request):
 
         base_url = get_working_base_url(dominio_limpio)
         progress_key = f"{dominio}_{int(time.time())}"
-        crawling_progress[progress_key] = {"count": 0, "last": None, "done": False}
 
         # Crear el objeto BusquedaDominio al iniciar
         from django.utils import timezone
@@ -412,19 +572,170 @@ def iniciar_crawling_ajax(request):
             urls="",
             fecha=timezone.now(),
         )
+
+        # Crear progreso persistente en base de datos
+        progress_obj = CrawlingProgress.objects.create(
+            progress_key=progress_key,
+            usuario=(request.user if request.user.is_authenticated else None),
+            dominio=dominio,
+            busqueda_id=obj.id,
+        )
+
+        # Mantener también en memoria para compatibilidad
+        crawling_progress[progress_key] = {"count": 0, "last": None, "done": False}
+
         # Guardar el id en la sesión para referencia
         request.session["busqueda_id"] = obj.id
 
         def crawl_and_save():
-            urls = crawl_urls_progress(base_url, limite_urls, progress_key)
-            # Al finalizar, actualizar el objeto con urls y fecha_fin
-            obj.urls = "\n".join(urls)
-            obj.fecha_fin = timezone.now()
-            obj.save()
+            try:
+                urls = crawl_urls_progress(base_url, limite_urls, progress_key)
+                # Al finalizar, actualizar ambos objetos
+                obj.urls = "\n".join(urls)
+                obj.fecha_fin = timezone.now()
+                obj.save()
+
+                # Actualizar también CrawlingProgress
+                progress_obj.is_done = True
+                progress_obj.save()
+
+                print(
+                    f"[AJAX] Crawling completado para {dominio}. URLs encontradas: {len(urls)}"
+                )
+            except Exception as e:
+                # En caso de error, asegurar que ambos se marquen como finalizados
+                print(f"[AJAX] Error en crawling: {e}")
+                obj.urls = ""
+                obj.fecha_fin = timezone.now()
+                obj.save()
+
+                # Marcar también como terminado en CrawlingProgress
+                progress_obj.is_done = True
+                progress_obj.save()
 
         t = threading.Thread(target=crawl_and_save)
         t.start()
         return JsonResponse({"progress_key": progress_key})
+    return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+def iniciar_crawling_multiple_ajax(request):
+    """Inicia el crawling para múltiples dominios en background"""
+    if request.method == "POST":
+        dominios_text = request.POST.get("dominios_multiple", "")
+        limite_urls = request.POST.get("limite_urls_multiple")
+
+        try:
+            limite_urls = int(limite_urls) if limite_urls else 50
+        except Exception:
+            limite_urls = 50
+
+        # Limitar el límite máximo para análisis múltiple
+        if limite_urls > 500:
+            limite_urls = 500
+
+        # Procesar lista de dominios
+        dominios_raw = [d.strip() for d in dominios_text.split("\n") if d.strip()]
+
+        # Validar cantidad de dominios
+        if len(dominios_raw) > 10:
+            return JsonResponse({"error": "Máximo 10 dominios permitidos"}, status=400)
+
+        if len(dominios_raw) == 0:
+            return JsonResponse({"error": "No se proporcionaron dominios"}, status=400)
+
+        # Validar y normalizar dominios
+        regex = r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$"
+        dominios_validos = []
+
+        for dominio_raw in dominios_raw:
+            dominio_normalizado = normalizar_dominio(dominio_raw)
+            if re.match(regex, dominio_normalizado):
+                dominios_validos.append(dominio_normalizado)
+
+        if len(dominios_validos) == 0:
+            return JsonResponse(
+                {"error": "No se encontraron dominios válidos"}, status=400
+            )
+
+        # Generar clave de progreso única para el lote
+        batch_key = f"batch_{int(time.time())}"
+        crawling_progress[batch_key] = {
+            "type": "multiple",
+            "total_domains": len(dominios_validos),
+            "completed_domains": 0,
+            "current_domain": None,
+            "results": {},
+            "done": False,
+        }
+
+        def crawl_multiple_and_save():
+            from django.utils import timezone
+
+            for i, dominio in enumerate(dominios_validos):
+                try:
+                    # Actualizar progreso
+                    crawling_progress[batch_key]["current_domain"] = dominio
+                    crawling_progress[batch_key]["completed_domains"] = i
+
+                    # Realizar crawling individual
+                    base_url = f"https://{dominio}"
+                    resultado_crawl = crawl_urls(base_url, max_urls=limite_urls)
+
+                    # Manejar resultado
+                    if isinstance(resultado_crawl, dict):
+                        urls_encontradas = resultado_crawl["urls"]
+                        crawl_status = resultado_crawl["status"]
+                    else:
+                        urls_encontradas = resultado_crawl
+                        crawl_status = "legacy"
+
+                    # Crear registro en BD con fecha_fin inmediata
+                    busqueda = BusquedaDominio.objects.create(
+                        dominio=dominio,
+                        usuario=(
+                            request.user if request.user.is_authenticated else None
+                        ),
+                        urls="\n".join(urls_encontradas),
+                        fecha=timezone.now(),
+                        fecha_fin=timezone.now(),  # Marcar como completado inmediatamente
+                    )
+
+                    # Guardar resultado
+                    crawling_progress[batch_key]["results"][dominio] = {
+                        "urls_count": len(urls_encontradas),
+                        "status": crawl_status,
+                        "id": busqueda.id,
+                    }
+
+                    # Pequeña pausa entre dominios para evitar sobrecarga
+                    if i < len(dominios_validos) - 1:  # No pausar en el último
+                        time.sleep(2)
+
+                except Exception as e:
+                    # Manejar errores individuales
+                    crawling_progress[batch_key]["results"][dominio] = {
+                        "urls_count": 0,
+                        "status": "error",
+                        "error": str(e)[:100],
+                    }
+
+            # Marcar como completado
+            crawling_progress[batch_key]["done"] = True
+            crawling_progress[batch_key]["completed_domains"] = len(dominios_validos)
+
+        # Iniciar proceso en hilo separado
+        t = threading.Thread(target=crawl_multiple_and_save)
+        t.start()
+
+        return JsonResponse(
+            {
+                "progress_key": batch_key,
+                "total_domains": len(dominios_validos),
+                "valid_domains": dominios_validos,
+            }
+        )
+
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
@@ -832,16 +1143,16 @@ def analisis_dominio_view(request):
                         request.session.modified = True
 
                     # Generar mensaje informativo según el estado del crawling
-                    from .recommendations import get_domain_recommendations
+                    # from .recommendations import get_domain_recommendations  # Comentado temporalmente
                     from django.utils.safestring import mark_safe
 
                     base_msg = f"Dominio '{dominio}' analizado: {len(urls_encontradas)} URLs encontradas."
                     # Crear diccionario result si no existe
-                    if 'result' not in locals():
+                    if "result" not in locals():
                         result = {
-                            'urls': urls_encontradas,
-                            'status': crawl_status,
-                            'blocked_count': blocked_count
+                            "urls": urls_encontradas,
+                            "status": crawl_status,
+                            "blocked_count": blocked_count,
                         }
                         mensaje = f"{base_msg} ⚠️ Se detectó protección anti-bot, se usó sitemap como alternativa."
                         message_class = "warning"
@@ -870,31 +1181,32 @@ def analisis_dominio_view(request):
                         message_class = "success"
 
                     # Generar HTML para recomendaciones si existen
-                    if recommendations:
-                        recommendations_html = f"""
-                        <div class="domain-recommendations domain-{message_class}">
-                            <div class="recommendation-title">
-                                <i class="bi bi-lightbulb-fill recommendation-icon"></i>
-                                Recomendaciones para {dominio}
-                            </div>
-                        """
+                    # Temporalmente comentado hasta corregir el módulo de recomendaciones
+                    # if recommendations:
+                    #     recommendations_html = f"""
+                    #     <div class="domain-recommendations domain-{message_class}">
+                    #         <div class="recommendation-title">
+                    #             <i class="bi bi-lightbulb-fill recommendation-icon"></i>
+                    #             Recomendaciones para {dominio}
+                    #         </div>
+                    #     """
 
-                        for rec in recommendations:
-                            recommendations_html += f"""
-                            <div class="recommendation-item">
-                                <span class="recommendation-icon">{rec[:2]}</span>
-                                <span>{rec[2:]}</span>
-                            </div>
-                            """
+                    #     for rec in recommendations:
+                    #         recommendations_html += f"""
+                    #         <div class="recommendation-item">
+                    #             <span class="recommendation-icon">{rec[:2]}</span>
+                    #             <span>{rec[2:]}</span>
+                    #         </div>
+                    #         """
 
-                        recommendations_html += "</div>"
-                        mensaje = mark_safe(
-                            f'<div class="crawl-message {message_class}">{mensaje}</div>{recommendations_html}'
-                        )
-                    else:
-                        mensaje = mark_safe(
-                            f'<div class="crawl-message {message_class}">{mensaje}</div>'
-                        )
+                    #     recommendations_html += "</div>"
+                    #     mensaje = mark_safe(
+                    #         f'<div class="crawl-message {message_class}">{mensaje}</div>{recommendations_html}'
+                    #     )
+                    # else:
+                    mensaje = mark_safe(
+                        f'<div class="crawl-message {message_class}">{mensaje}</div>'
+                    )
 
     busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
     dominios_tabla = []
@@ -911,16 +1223,32 @@ def analisis_dominio_view(request):
 
         total_urls = len(b.get_urls())
 
-        if fecha_fin:
-            delta = fecha_fin - fecha_inicio
-            total_seconds = int(delta.total_seconds())
-            if total_seconds < 0:
-                duracion = "-"
-            else:
-                h = total_seconds // 3600
-                m = (total_seconds % 3600) // 60
-                s = total_seconds % 60
-                duracion = f"{h:02}:{m:02}:{s:02}"
+        # Verificar si hay progreso activo para esta búsqueda
+        progreso_activo = None
+        try:
+            progreso_activo = CrawlingProgress.objects.get(busqueda_id=b.id)
+        except CrawlingProgress.DoesNotExist:
+            pass
+
+        # Determinar estado basado en progreso activo y fecha_fin
+        if progreso_activo and not progreso_activo.is_done:
+            # Hay progreso activo
+            estado = "En progreso"
+            estado_detalle = f"🔄 {progreso_activo.count} URLs encontradas..."
+            estado_clase = "primary"
+            total_urls = progreso_activo.count  # Usar el conteo actual
+        elif fecha_fin or (progreso_activo and progreso_activo.is_done):
+            # Está finalizado
+            if fecha_fin:
+                delta = fecha_fin - fecha_inicio
+                total_seconds = int(delta.total_seconds())
+                if total_seconds < 0:
+                    duracion = "-"
+                else:
+                    h = total_seconds // 3600
+                    m = (total_seconds % 3600) // 60
+                    s = total_seconds % 60
+                    duracion = f"{h:02}:{m:02}:{s:02}"
             estado = "Finalizado"
 
             # Determinar estado específico basado en resultados
@@ -961,8 +1289,16 @@ def analisis_dominio_view(request):
                 estado_detalle = "ℹ️ Finalizado"
                 estado_clase = "info"
         else:
-            estado_detalle = "🔄 En curso..."
-            estado_clase = "primary"
+            # No hay fecha_fin y no hay progreso activo
+            # Verificar si es un proceso abandonado/colgado
+            hace_10min = timezone.now() - timezone.timedelta(minutes=10)
+            if b.fecha < hace_10min:
+                estado = "Error/Abandonado"
+                estado_detalle = "⚠️ Proceso interrumpido"
+                estado_clase = "warning"
+            else:
+                estado_detalle = "🔄 En curso..."
+                estado_clase = "primary"
 
         dominios_tabla.append(
             {
@@ -1043,7 +1379,7 @@ def analisis_url_view(request):
 
 def dashboard_view(request):
     """Vista del dashboard con estadísticas de dominios bloqueados"""
-    from .recommendations import get_blocked_domains_stats
+    # from .recommendations import get_blocked_domains_stats  # Comentado temporalmente
 
     # Obtener estadísticas de dominios bloqueados
     blocked_stats = get_blocked_domains_stats()
