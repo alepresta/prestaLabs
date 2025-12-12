@@ -463,6 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 								actualizarProgreso(prog);
 								if (prog.done) {
 									clearInterval(polling);
+									crawlingActivo = false;
 									console.log('[SESSION] Crawling completado, recargando página...');
 									setTimeout(() => { window.location.reload(); }, 1200);
 								}
@@ -538,6 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const spanUrls = document.getElementById('progreso-urls');
 	const spanUltima = document.getElementById('progreso-ultima');
 	let polling = null;
+	let crawlingActivo = false;
 
 	formCrawling.addEventListener('submit', function(e) {
 		e.preventDefault();
@@ -548,6 +550,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		spanUltima.textContent = '';
 		// Mostrar la tarjeta de progreso al iniciar una nueva búsqueda
 		divProgreso.style.display = '';
+		
+		// Marcar crawling como activo
+		crawlingActivo = true;
 		if (polling) clearInterval(polling);
 
 		fetch('/crawling/iniciar/', {
@@ -668,6 +673,7 @@ function ejecutarDetencion() {
 	.then(data => {
 		console.log('Respuesta detener crawling:', data);
 		if (data.success) {
+			crawlingActivo = false;
 			PrestaLabs.Popup.exito('Crawling detenido: ' + (data.dominio || 'exitosamente'), function() {
 				// Recargar página para mostrar estado actualizado
 				window.location.reload();
@@ -707,6 +713,48 @@ function detenerCrawlingTabla(progressId, dominio, form) {
 			titulo: 'Detener Crawling',
 			textoConfirmar: 'Sí, detener',
 			textoCancelar: 'Cancelar',
+			tipoBoton: 'warning'
+		}
+	);
+}
+
+// Sistema mejorado para interceptar F5 y navegación durante crawling
+let interceptarNavegacion = false;
+
+// Interceptor de F5 y navegación
+document.addEventListener('keydown', function(e) {
+	if (crawlingActivo && (e.key === 'F5' || (e.ctrlKey && e.key === 'r'))) {
+		e.preventDefault();
+		mostrarConfirmacionSalida();
+	}
+});
+
+// Interceptor para beforeunload (popup nativo como fallback)
+window.addEventListener('beforeunload', function(e) {
+	if (crawlingActivo && !interceptarNavegacion) {
+		// Solo mostrar popup nativo si no hemos manejado la navegación
+		e.preventDefault();
+		e.returnValue = 'Hay un proceso de crawling en curso. ¿Estás seguro de que quieres salir?';
+		return e.returnValue;
+	}
+});
+
+// Función para mostrar confirmación personalizada
+function mostrarConfirmacionSalida() {
+	PrestaLabs.Popup.confirmar(
+		'Hay un proceso de crawling en curso. ¿Estás seguro de que quieres recargar la página? Se perderá el progreso actual.',
+		function() {
+			// Confirmar: permitir salir
+			interceptarNavegacion = true;
+			crawlingActivo = false;
+			if (polling) clearInterval(polling);
+			window.location.reload();
+		},
+		null, // Cancelar: no hacer nada
+		{
+			titulo: 'Crawling en Progreso',
+			textoConfirmar: 'Sí, recargar',
+			textoCancelar: 'Continuar crawling',
 			tipoBoton: 'warning'
 		}
 	);
