@@ -78,11 +78,16 @@
 			<div id="progreso-crawling" class="mb-4">
 				<div class="card border-info shadow-sm">
 					<div class="card-body">
-						<div class="d-flex align-items-center mb-2">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<div class="d-flex align-items-center">
 							<span class="me-2" style="font-size:1.5em;color:#0d6efd;">
 								<i class="bi bi-globe"></i>
 							</span>
 							<h5 class="mb-0">Progreso de Crawling</h5>
+						</div>
+						<button id="btn-detener-crawling" class="btn btn-danger btn-sm">
+							<i class="bi bi-stop-circle me-1"></i>Detener
+						</button>
 						</div>
 						<div class="progress mb-2" style="height: 1.5rem;">
 							<div id="barra-progreso" class="progress-bar progress-bar-striped progress-bar-animated bg-info fw-bold" role="progressbar" style="width: 0%">0%</div>
@@ -504,6 +509,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 	}
 	
+
+
 	// Función para actualizar el progreso
 	function actualizarProgreso(prog) {
 		let count = prog.count || 0;
@@ -516,6 +523,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		barraProgreso.textContent = percent + '%';
 		spanUrls.textContent = `URLs encontradas: ${count}`;
 		spanUltima.textContent = last ? `Última: ${last}` : '';
+		
+		// Mostrar/ocultar botón de detener según el estado
+		const btnDetener = document.getElementById('btn-detener-crawling');
+		if (btnDetener) {
+			btnDetener.style.display = done ? 'none' : 'block';
+		}
 		
 		// Mostrar URLs encontradas en tiempo real
 		if (urls.length > 0) {
@@ -838,5 +851,62 @@ tiendamia.com`;
 		textarea.focus();
 	}
 }
+
+// Event listener para el botón detener
+document.addEventListener('DOMContentLoaded', function() {
+	const btnDetener = document.getElementById('btn-detener-crawling');
+	if (btnDetener) {
+		btnDetener.addEventListener('click', function() {
+			detenerCrawling();
+		});
+	}
+});
+
+// Función para detener crawling
+function detenerCrawling() {
+	if (!confirm('¿Estás seguro de que quieres detener el crawling actual?')) {
+		return;
+	}
+	
+	const btnDetener = document.getElementById('btn-detener-crawling');
+	if (!btnDetener) {
+		alert('No se encontró el botón detener');
+		return;
+	}
+	
+	btnDetener.disabled = true;
+	btnDetener.innerHTML = '<i class="bi bi-hourglass me-1"></i>Deteniendo...';
+	
+	fetch('/crawling/detener/', {
+		method: 'POST',
+		headers: {
+			'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+			'Content-Type': 'application/json'
+		}
+	})
+	.then(response => response.json())
+	.then(data => {
+		console.log('Respuesta detener crawling:', data);
+		if (data.success) {
+			alert('✅ Crawling detenido: ' + (data.dominio || 'exitosamente'));
+			if (typeof polling !== 'undefined' && polling) {
+				clearInterval(polling);
+			}
+			// Recargar página para mostrar estado actualizado
+			setTimeout(() => { window.location.reload(); }, 1000);
+		} else {
+			alert('❌ Error: ' + (data.error || 'No se pudo detener el crawling'));
+			btnDetener.disabled = false;
+			btnDetener.innerHTML = '<i class="bi bi-stop-circle me-1"></i>Detener';
+		}
+	})
+	.catch(error => {
+		console.error('Error deteniendo crawling:', error);
+		alert('❌ Error de conexión al detener el crawling');
+		btnDetener.disabled = false;
+		btnDetener.innerHTML = '<i class="bi bi-stop-circle me-1"></i>Detener';
+	});
+}
+
 </script>
 {% endblock %}
