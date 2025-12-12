@@ -1905,6 +1905,49 @@ def index(request):
 
 def dominios_guardados_view(request):
     """Vista para mostrar solo los dominios guardados"""
+    mensaje = ""
+
+    # Manejar acciones POST (eliminación)
+    if request.method == "POST":
+        if "eliminar_individual" in request.POST:
+            eliminar_id = request.POST.get("eliminar_individual")
+
+            # Verificar si hay crawling activo para este dominio
+            try:
+                CrawlingProgress.objects.get(
+                    busqueda_id=eliminar_id, is_done=False
+                )
+                mensaje = (
+                    "No se puede eliminar el análisis porque hay un proceso "
+                    "de crawling activo. Por favor espera a que termine o "
+                    "detén el proceso antes de eliminar."
+                )
+            except CrawlingProgress.DoesNotExist:
+                # Si no hay crawling activo, proceder con la eliminación
+                # Obtener el dominio antes de eliminarlo
+                try:
+                    busqueda_obj = BusquedaDominio.objects.get(id=eliminar_id)
+                    dominio_eliminado = busqueda_obj.dominio
+                except BusquedaDominio.DoesNotExist:
+                    dominio_eliminado = "desconocido"
+
+                from django.db import connection
+
+                cursor = connection.cursor()
+                # Eliminar de core_analisisurl si existe
+                cursor.execute(
+                    "DELETE FROM core_analisisurl WHERE busqueda_id = %s",
+                    [eliminar_id],
+                )
+                # Eliminar de CrawlingProgress
+                CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
+                # Finalmente eliminar la BusquedaDominio
+                BusquedaDominio.objects.filter(id=eliminar_id).delete()
+                mensaje = (
+                    f"Búsqueda del dominio '{dominio_eliminado}' "
+                    "eliminada correctamente."
+                )
+
     # Obtener solo los dominios marcados como guardados
     dominios_guardados = BusquedaDominio.objects.filter(guardado=True).order_by(
         "-fecha"
@@ -1944,6 +1987,7 @@ def dominios_guardados_view(request):
         "page_obj": page_obj,
         "total_guardados": dominios_guardados.count(),
         "titulo_pagina": "Dominios Guardados",
+        "mensaje": mensaje,
     }
 
     return render(request, "dominios_guardados.html", context)

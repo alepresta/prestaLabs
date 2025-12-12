@@ -5,98 +5,42 @@
 <div class="container-xl py-4">
     <div class="row mb-4">
         <div class="col-lg-8 mx-auto">
-            <div class="card shadow-lg border-0 mb-4">
-                <div class="card-body">
-                    <h2 class="mb-3 text-primary fw-bold">
-                        <i class="bi bi-search me-2"></i> Detalle de búsqueda
-                    </h2>
-                    {% if error %}
-                        <div class="alert alert-warning">{{ error }}</div>
-                    {% elif busquedas and busquedas|length > 0 %}
-                                                <div class="row mb-3">
-                                                    <div class="col-md-12">
-                                                        <div class="card border-0 bg-light mb-2">
-                                                            <div class="card-body p-3">
-                                                                <h4 class="mb-2 fw-bold text-dark text-center" style="font-size:1.5rem;word-break:break-all;">{{ dominio }}</h4>
-                                                                <div class="text-center text-muted p-0 m-0" style="font-size:0.85em;line-height:1.1;">
-                                                                    <span style="margin-right:10px;">ID: <strong>{{ busquedas.0.id }}</strong></span>
-                                                                    <span style="margin-right:10px;">Usuario: <strong>{% if busquedas.0.usuario %}{{ busquedas.0.usuario.username }}{% else %}<em>Desconocido</em>{% endif %}</strong></span>
-                                                                      <span style="margin-right:10px;">Estado: <strong>Finalizado</strong></span>
-                                                                    <span style="margin-right:10px;">Inicio: <strong>{{ busquedas.0.fecha|date:'d/m/Y H:i' }}</strong></span>
-                                                                    <span style="margin-right:10px;">Fin: <strong>{% if busquedas.0.fecha_fin %}{{ busquedas.0.fecha_fin|date:'d/m/Y H:i' }}{% else %}-{% endif %}</strong></span>
-                                                                    <span style="margin-right:10px;">Duración: <strong>{% if busquedas.0.fecha_fin %}{% with dur=busquedas.0.fecha_fin|timesince:busquedas.0.fecha %}{{ dur }}{% endwith %}{% else %}-{% endif %}</strong></span>
-                                                                    <span style="margin-right:10px;">URLs: <strong>{{ busquedas.0.get_urls|length }}</strong></span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                        {% if mensaje %}
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ mensaje }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endif %}
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i> URLs encontradas</h5>
-                            <a href="#" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i> Exportar</a>
+            {% if error %}
+                <div class="alert alert-warning">{{ error }}</div>
+            {% elif busquedas and busquedas|length > 0 %}
+                <div class="card border-0 bg-light mb-2">
+                    <div class="card-body p-3">
+                        <h4 class="mb-2 fw-bold text-dark text-center" style="font-size:1.5rem;word-break:break-all;">{{ dominio }}</h4>
+                        <div class="text-center text-muted p-0 m-0" style="font-size:0.85em;line-height:1.1;">
+                            <span style="margin-right:10px;">ID: <strong>{{ busquedas.0.id }}</strong></span>
+                            <span style="margin-right:10px;">Usuario: <strong>{% if busquedas.0.usuario %}{{ busquedas.0.usuario.username }}{% else %}<em>Desconocido</em>{% endif %}</strong></span>
+                            <span style="margin-right:10px;">Estado: <strong>Finalizado</strong></span>
+                            <span style="margin-right:10px;">Inicio: <strong>{{ busquedas.0.fecha|date:'d/m/Y H:i' }}</strong></span>
+                            <span style="margin-right:10px;">Fin: <strong>{% if busquedas.0.fecha_fin %}{{ busquedas.0.fecha_fin|date:'d/m/Y H:i' }}{% else %}-{% endif %}</strong></span>
+                            <span style="margin-right:10px;">Duración: <strong>{% if busquedas.0.fecha_fin %}{% with dur=busquedas.0.fecha_fin|timesince:busquedas.0.fecha %}{{ dur }}{% endwith %}{% else %}-{% endif %}</strong></span>
+                            <span style="margin-right:10px;">URLs: <strong>{{ busquedas.0.get_urls|length }}</strong></span>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle bg-white rounded shadow-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">URL</th>
-                                        <th scope="col" class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for url in busquedas.0.get_urls %}
-                                    <tr>
-                                        <td><span class="badge bg-secondary">{{ forloop.counter }}</span></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                {% if url in urls_guardadas %}
-                                                    <i class="bi bi-bookmark-fill text-warning me-2"></i>
-                                                {% endif %}
-                                                <span class="text-break">{{ url }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            {% if url in urls_guardadas %}
-                                                <form method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <button type="submit" name="desmarcar_url" value="{{ url }}" 
-                                                            class="btn btn-sm btn-outline-warning" 
-                                                            title="Desmarcar URL guardada">
-                                                        <i class="bi bi-bookmark-dash"></i>
-                                                    </button>
-                                                </form>
-                                            {% else %}
-                                                <form method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <button type="submit" name="guardar_url" value="{{ url }}" 
-                                                            class="btn btn-sm btn-outline-primary" 
-                                                            title="Guardar URL">
-                                                        <i class="bi bi-bookmark-plus"></i>
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr><td colspan="3" class="text-center text-muted">No se encontraron URLs.</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-info">No se encontraron búsquedas para este dominio.</div>
-                    {% endif %}
-                    <a href="/analisis/dominio/" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left me-1"></i> Volver al análisis de dominios</a>
+                    </div>
                 </div>
-            </div>
+
+                <div class="mt-4">
+                    <h5 class="mb-3"><i class="bi bi-link-45deg me-2"></i> URLs encontradas</h5>
+                    <div class="list-group">
+                        {% for url in busquedas.0.get_urls %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <span class="badge bg-secondary me-3">{{ forloop.counter }}</span>
+                            <a href="{{ url }}" target="_blank" class="text-decoration-none flex-grow-1 text-break">{{ url }}</a>
+                            <i class="bi bi-box-arrow-up-right text-muted ms-2"></i>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted">No se encontraron URLs.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">No se encontraron búsquedas para este dominio.</div>
+            {% endif %}
+            <a href="/analisis/dominio/" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left me-1"></i> Volver al análisis de dominios</a>
         </div>
     </div>
 </div>

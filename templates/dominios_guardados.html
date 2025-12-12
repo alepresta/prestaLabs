@@ -16,6 +16,13 @@
 				</div>
 			</div>
 
+			{% if mensaje %}
+				<div class="alert alert-success alert-dismissible fade show" role="alert">
+					{{ mensaje }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+			{% endif %}
+
 			{% if total_guardados > 0 %}
 				<div class="card shadow-sm">
 					<div class="card-body p-0">
@@ -123,7 +130,7 @@
 														</li>
 														<li><hr class="dropdown-divider"></li>
 														<li>
-															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
+															<form method="post" action="{% url 'dominios_guardados' %}" style="display:inline;">
 																{% csrf_token %}
 																<button type="submit" name="eliminar_individual" value="{{ d.id }}" class="dropdown-item d-flex align-items-center">
 																	<i class="bi bi-trash me-2 text-danger"></i> Eliminar
