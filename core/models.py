@@ -14,6 +14,35 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class CrawlingProgress(BaseModel):
+    """Modelo para almacenar el progreso del crawling de forma persistente"""
+
+    progress_key = models.CharField(max_length=255, unique=True, db_index=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    dominio = models.CharField(max_length=255)
+    count = models.IntegerField(default=0)
+    last_url = models.TextField(blank=True)
+    is_done = models.BooleanField(default=False)
+    urls_found = models.TextField(
+        blank=True, help_text="URLs encontradas separadas por |"
+    )
+    busqueda_id = models.IntegerField(
+        null=True, blank=True, help_text="ID de BusquedaDominio relacionado"
+    )
+
+    def get_urls_list(self):
+        return self.urls_found.split("|") if self.urls_found else []
+
+    def add_url(self, url):
+        urls = self.get_urls_list()
+        urls.append(url)
+        self.urls_found = "|".join(urls)
+        self.count = len(urls)
+
+    def __str__(self):
+        return f"Progreso {self.dominio} - {self.count} URLs ({'✓' if self.is_done else '⏳'})"
+
+
 class BusquedaDominio(BaseModel):
     dominio = models.CharField(max_length=255)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
