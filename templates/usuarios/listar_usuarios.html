@@ -3,7 +3,7 @@
 {% block content %}
 <h2 class="mb-4">Gestión de Usuarios</h2>
 {% if user.is_staff %}
-<form method="post" action="/usuarios/exportar/" class="mb-3">
+<form method="post" action="{% url 'exportar_usuarios' %}" class="mb-3">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-secondary">Exportar usuarios</button>
 </form>
@@ -51,7 +51,7 @@
             <td>{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}Pendiente{% endif %}</td>
             <td>
                 <a href="/usuarios/editar/?id={{ usuario.id }}" class="btn btn-primary btn-sm">Editar</a>
-                <form method="post" action="/usuarios/eliminar/" style="display:inline;">
+                <form method="post" action="{% url 'eliminar_usuario' %}" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{ usuario.id }}">
                     <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarUsuario('{{ usuario.username }}', this.form)">Eliminar</button>

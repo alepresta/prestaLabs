@@ -159,7 +159,29 @@ function cerrar_procesos() {
         echo "[CLEAN] Eliminado celery.pid"
     fi
     
-    # 6. Verificar que los procesos se cerraron
+    # 6. Limpiar base de datos de procesos activos
+    echo "[CLEAN] Limpiando procesos activos en base de datos..."
+    if [ -f "manage.py" ]; then
+        python manage.py shell -c "
+from core.models import CrawlingProgress, BusquedaDominio
+from django.utils import timezone
+
+# Marcar todos los CrawlingProgress como terminados
+activos = CrawlingProgress.objects.filter(is_done=False)
+count_progress = activos.count()
+activos.update(is_done=True)
+
+# Completar todas las BusquedaDominio sin fecha_fin
+incompletas = BusquedaDominio.objects.filter(fecha_fin__isnull=True)
+count_busquedas = incompletas.count()
+incompletas.update(fecha_fin=timezone.now())
+
+print(f'[DB CLEAN] {count_progress} CrawlingProgress marcados como terminados')
+print(f'[DB CLEAN] {count_busquedas} BusquedaDominio completadas')
+" 2>/dev/null || echo "[INFO] No se pudo limpiar la base de datos (sin Django disponible)"
+    fi
+    
+    # 7. Verificar que los procesos se cerraron
     sleep 2
     REMAINING=$(ps aux | grep -E "(manage.py|celery)" | grep -v grep | wc -l)
     if [ "$REMAINING" -gt 0 ]; then

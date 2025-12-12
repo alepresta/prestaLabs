@@ -1,47 +1,32 @@
-# URLs reorganizadas usando nueva estructura modular
+# Eliminado bloque incorrecto y duplicado
 from django.urls import path
 
-# Vistas de crawling y análisis de dominios
-from .views.crawling_views import (
-    analisis_dominio_view,
-    iniciar_crawling_ajax,
-    progreso_crawling_ajax,
-    api_status,
-)
-
-# Vistas de dashboard y análisis de resultados
-from .views.dashboard_views import (
-    index,
-    analisis_detalle,
-    urls_guardadas_view,
-    analisis_url_view,
-    exportar_urls_csv,
-)
-
-# Vistas de gestión de usuarios
-from .views.user_views import (
-    admin_set_password_view,
-    listar_usuarios_view,
-)
-
-# Funciones que aún no se han migrado (views_app.py)
 from .views_app import (
+    index,
+    api_status,
+    analisis_dominio_view,
     dominios_guardados_view,
     exportar_dominio_individual,
+    urls_guardadas_view,
+    analisis_detalle,
     documentacion_view,
     configuracion_view,
     reportes_view,
+    analisis_url_view,
     editar_usuarios_view,
     soporte_view,
     nuevo_usuario_view,
     nuevo_reporte_view,
+    listar_usuarios_view,
+    admin_set_password_view,
+    iniciar_crawling_ajax,
     iniciar_crawling_multiple_ajax,
+    progreso_crawling_ajax,
     verificar_crawling_activo,
     listar_crawlings_activos_ajax,
     detener_crawling_ajax,
     limpiar_procesos_fantasma_ajax,
 )
-
 from core.views.analisis_estado import analisis_estado
 from core.views.test_views import test_session_recovery
 

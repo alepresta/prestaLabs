@@ -1137,7 +1137,10 @@ def analisis_dominio_view(request):
                 CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
                 # Finalmente eliminar la BusquedaDominio
                 BusquedaDominio.objects.filter(id=eliminar_id).delete()
-                mensaje = f"Búsqueda del dominio '{dominio_eliminado}' eliminada correctamente."
+                mensaje = (
+                    f"Búsqueda del dominio '{dominio_eliminado}' "
+                    "eliminada correctamente."
+                )
         elif "guardar_individual" in request.POST:
             guardar_id = request.POST.get("guardar_individual")
             try:
@@ -2401,6 +2404,10 @@ def exportar_dominio_individual(request, dominio_id, formato):
 
         except Exception as e:
             print(f"Error generando PDF: {type(e).__name__}: {str(e)}")
+            import traceback
+            print(f"Traceback completo:")
+            traceback.print_exc()
+            print(f"Datos que causaron el error: {datos}")
             return exportar_dominio_individual(request, dominio_id, "txt")
 
     elif formato == "txt":
