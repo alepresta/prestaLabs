@@ -11,8 +11,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.utils import timezone
-
 from .forms import AdminSetPasswordForm, DominioForm
 from .models import BusquedaDominio, CrawlingProgress
 
@@ -22,7 +20,6 @@ crawling_progress = {}
 
 def limpiar_procesos_colgados():
     """Limpia procesos de crawling que han quedado colgados"""
-    from django.utils import timezone
 
     # Buscar procesos que no han sido actualizados en más de 10 minutos
     hace_10min = timezone.now() - timezone.timedelta(minutes=10)
@@ -55,7 +52,6 @@ def limpiar_procesos_colgados():
 
 def sincronizar_estados_crawling():
     """Sincroniza los estados entre CrawlingProgress y BusquedaDominio"""
-    from django.utils import timezone
 
     # Buscar CrawlingProgress terminados que tienen BusquedaDominio sin fecha_fin
     progresos_terminados = CrawlingProgress.objects.filter(
@@ -108,7 +104,6 @@ def verificar_crawling_activo(request):
     sincronizar_estados_crawling()
 
     # Buscar crawlings activos (no completados) de las últimas 24 horas
-    from django.utils import timezone
 
     hace_24h = timezone.now() - timezone.timedelta(hours=24)
 
@@ -264,7 +259,7 @@ def try_sitemap_fallback(domain):
             robots_response = requests.get(robots_url, timeout=10, headers=headers)
 
             if robots_response.status_code == 200:
-                print(f"[SITEMAP] ✅ robots.txt accesible")
+                print("[SITEMAP] ✅ robots.txt accesible")
                 for line in robots_response.text.split("\n"):
                     if line.lower().strip().startswith("sitemap:"):
                         sitemap_url = line.split(":", 1)[1].strip()
@@ -304,15 +299,15 @@ def try_sitemap_fallback(domain):
             print(f"[SITEMAP] Respuesta: {response.status_code}")
 
             if response.status_code == 200:
-                print(f"[SITEMAP] ✅ Sitemap accesible, parseando contenido...")
+                print("[SITEMAP] ✅ Sitemap accesible, parseando contenido...")
                 urls = parse_sitemap_urls(response.content, domain)
                 if urls:
                     print(f"[SITEMAP] 🎉 Encontradas {len(urls)} URLs en sitemap")
                     return urls
                 else:
-                    print(f"[SITEMAP] ⚠️ Sitemap válido pero sin URLs útiles")
+                    print("[SITEMAP] ⚠️ Sitemap válido pero sin URLs útiles")
             elif response.status_code == 403:
-                print(f"[SITEMAP] ❌ Sitemap bloqueado (403)")
+                print("[SITEMAP] ❌ Sitemap bloqueado (403)")
             else:
                 print(f"[SITEMAP] ❌ Sitemap no disponible ({response.status_code})")
 
@@ -393,7 +388,6 @@ def parse_sitemap_urls(content, base_domain, max_urls=100):
 def guardar_busqueda_ajax(dominio, urls, user=None):
     # Limpiar: quitar vacíos, espacios y duplicados
     urls_limpias = list(dict.fromkeys([u.strip() for u in urls if u and u.strip()]))
-    from django.utils import timezone
 
     # Buscar la última búsqueda sin fecha_fin para este usuario y dominio
 
@@ -577,7 +571,6 @@ def iniciar_crawling_ajax(request):
         progress_key = f"{dominio}_{int(time.time())}"
 
         # Crear el objeto BusquedaDominio al iniciar
-        from django.utils import timezone
 
         obj = BusquedaDominio.objects.create(
             dominio=dominio,
@@ -683,7 +676,6 @@ def iniciar_crawling_multiple_ajax(request):
         }
 
         def crawl_multiple_and_save():
-            from django.utils import timezone
 
             for i, dominio in enumerate(dominios_validos):
                 try:
@@ -943,7 +935,7 @@ def crawl_urls(base_url, max_urls=None):
                             "sitemap_urls": len(sitemap_urls),
                         }
                     else:
-                        print(f"[CRAWL] ❌ No se encontró sitemap accesible")
+                        print("[CRAWL] ❌ No se encontró sitemap accesible")
                         return {
                             "urls": urls,
                             "status": "blocked_no_sitemap",
@@ -1008,7 +1000,7 @@ def crawl_urls(base_url, max_urls=None):
             print(f"[CRAWL] ⏰ Timeout en {url}")
             blocked_count += 1
             if blocked_count >= max_blocks and len(urls) == 0:
-                print(f"[CRAWL] 🚨 Demasiados timeouts. Intentando sitemap...")
+                print("[CRAWL] 🚨 Demasiados timeouts. Intentando sitemap...")
                 sitemap_urls = try_sitemap_fallback(domain)
                 if sitemap_urls:
                     print(f"[CRAWL] ✅ Sitemap encontrado con {len(sitemap_urls)} URLs")
@@ -1030,7 +1022,7 @@ def crawl_urls(base_url, max_urls=None):
             blocked_count += 1
             if blocked_count >= max_blocks and len(urls) == 0:
                 print(
-                    f"[CRAWL] 🚨 Demasiados errores de conexión. Intentando sitemap..."
+                    "[CRAWL] 🚨 Demasiados errores de conexión. Intentando sitemap..."
                 )
                 sitemap_urls = try_sitemap_fallback(domain)
                 if sitemap_urls:
@@ -1093,7 +1085,6 @@ def analisis_dominio_view(request):
 
                     # También actualizar BusquedaDominio si existe
                     try:
-                        from django.utils import timezone
 
                         busqueda = BusquedaDominio.objects.get(id=busqueda_id)
                         if not busqueda.fecha_fin:
@@ -1116,11 +1107,13 @@ def analisis_dominio_view(request):
                 mensaje = "No se encontró el proceso de crawling activo"
         elif "eliminar_individual" in request.POST:
             eliminar_id = request.POST.get("eliminar_individual")
-            
+
             # Verificar si hay crawling activo para este dominio
             try:
-                progress_obj = CrawlingProgress.objects.get(busqueda_id=eliminar_id, is_done=False)
-                mensaje = f"No se puede eliminar el análisis porque hay un proceso de crawling activo. Por favor espera a que termine o detén el proceso antes de eliminar."
+                progress_obj = CrawlingProgress.objects.get(
+                    busqueda_id=eliminar_id, is_done=False
+                )
+                mensaje = "No se puede eliminar el análisis porque hay un proceso de crawling activo. Por favor espera a que termine o detén el proceso antes de eliminar."
             except CrawlingProgress.DoesNotExist:
                 # Si no hay crawling activo, proceder con la eliminación
                 # Obtener el dominio antes de eliminarlo
@@ -1129,7 +1122,7 @@ def analisis_dominio_view(request):
                     dominio_eliminado = busqueda_obj.dominio
                 except BusquedaDominio.DoesNotExist:
                     dominio_eliminado = "desconocido"
-                
+
                 from django.db import connection
 
                 cursor = connection.cursor()
@@ -1145,10 +1138,12 @@ def analisis_dominio_view(request):
         elif "eliminar_seleccionados" in request.POST or "eliminar_ids" in request.POST:
             ids = request.POST.getlist("eliminar_ids")
             if ids:  # Solo proceder si hay IDs seleccionados
-                
+
                 # Verificar si alguno tiene crawling activo
-                crawling_activo = CrawlingProgress.objects.filter(busqueda_id__in=ids, is_done=False).exists()
-                
+                crawling_activo = CrawlingProgress.objects.filter(
+                    busqueda_id__in=ids, is_done=False
+                ).exists()
+
                 if crawling_activo:
                     mensaje = "No se pueden eliminar los análisis seleccionados porque hay procesos de crawling activos. Por favor espera a que terminen o detén los procesos antes de eliminar."
                 else:
@@ -1160,7 +1155,8 @@ def analisis_dominio_view(request):
                     for id_val in ids:
                         # Eliminar de core_analisisurl si existe
                         cursor.execute(
-                            "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val]
+                            "DELETE FROM core_analisisurl WHERE busqueda_id = %s",
+                            [id_val],
                         )
                     # Eliminar de CrawlingProgress
                     CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
@@ -1310,7 +1306,6 @@ def analisis_dominio_view(request):
 
     busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
     dominios_tabla = []
-    from django.utils import timezone
 
     for b in busquedas_qs:
         dom_norm = normalizar_dominio(b.dominio)
@@ -1484,7 +1479,8 @@ def dashboard_view(request):
     # from .recommendations import get_blocked_domains_stats  # Comentado temporalmente
 
     # Obtener estadísticas de dominios bloqueados
-    blocked_stats = get_blocked_domains_stats()
+    # blocked_stats = get_blocked_domains_stats()  # Comentado temporalmente
+    blocked_stats = {}
 
     # Obtener búsquedas recientes (últimas 10)
     recent_searches = BusquedaDominio.objects.order_by("-fecha")[:10]
@@ -1634,7 +1630,6 @@ def limpiar_procesos_fantasma_ajax(request):
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
     try:
-        from django.utils import timezone
 
         # Limpiar CrawlingProgress huérfanos (más de 1 hora sin actualizar)
         hace_1h = timezone.now() - timezone.timedelta(hours=1)
@@ -1690,7 +1685,7 @@ def detener_crawling_ajax(request):
         try:
             body = json.loads(request.body.decode("utf-8"))
             progress_id = body.get("progress_id")
-        except:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             progress_id = request.POST.get("progress_id")
 
         if progress_id:
@@ -1743,7 +1738,6 @@ def detener_crawling_ajax(request):
         # También detener en BusquedaDominio si existe
         if progress_obj.busqueda_id:
             try:
-                from django.utils import timezone
 
                 busqueda = BusquedaDominio.objects.get(id=progress_obj.busqueda_id)
                 if not busqueda.fecha_fin:  # Solo si no está ya terminado
@@ -1793,7 +1787,6 @@ def listar_crawlings_activos_ajax(request):
     usuario = request.user if request.user.is_authenticated else None
 
     try:
-        from django.utils import timezone
 
         # Buscar todos los crawlings activos del usuario (últimas 24 horas)
         hace_24h = timezone.now() - timezone.timedelta(hours=24)
