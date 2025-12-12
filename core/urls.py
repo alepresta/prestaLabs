@@ -77,7 +77,11 @@ urlpatterns = [
         "crawling/activo/", verificar_crawling_activo, name="verificar_crawling_activo"
     ),
     path("crawling/detener/", detener_crawling_ajax, name="detener_crawling_ajax"),
-    path("crawling/limpiar/", limpiar_procesos_fantasma_ajax, name="limpiar_procesos_fantasma_ajax"),
+    path(
+        "crawling/limpiar/",
+        limpiar_procesos_fantasma_ajax,
+        name="limpiar_procesos_fantasma_ajax",
+    ),
     path("analisis/estado/", analisis_estado, name="analisis_estado"),
     path("test/session-recovery/", test_session_recovery, name="test_session_recovery"),
     # path("analisis/historial/", historial_busquedas, name="historial_busquedas"),
