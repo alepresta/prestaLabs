@@ -1914,9 +1914,7 @@ def dominios_guardados_view(request):
 
             # Verificar si hay crawling activo para este dominio
             try:
-                CrawlingProgress.objects.get(
-                    busqueda_id=eliminar_id, is_done=False
-                )
+                CrawlingProgress.objects.get(busqueda_id=eliminar_id, is_done=False)
                 mensaje = (
                     "No se puede eliminar el análisis porque hay un proceso "
                     "de crawling activo. Por favor espera a que termine o "
