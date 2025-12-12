@@ -2,6 +2,8 @@ import threading
 import time
 import re
 import random
+import json
+import csv
 from urllib.parse import urljoin, urlparse
 from defusedxml.ElementTree import fromstring as ET_fromstring
 import requests
@@ -9,9 +11,10 @@ from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
+from datetime import datetime
 from .forms import AdminSetPasswordForm, DominioForm
 from .models import BusquedaDominio, CrawlingProgress, UrlGuardada
 
@@ -1323,7 +1326,10 @@ def analisis_dominio_view(request):
                         f'<div class="crawl-message {message_class}">{mensaje}</div>'
                     )
 
-    busquedas_qs = BusquedaDominio.objects.order_by("-fecha")[:1000]
+    # Filtrar dominios guardados - solo mostrar los no guardados en la vista principal
+    busquedas_qs = BusquedaDominio.objects.filter(guardado=False).order_by("-fecha")[
+        :1000
+    ]
     dominios_tabla = []
 
     for b in busquedas_qs:
@@ -1971,3 +1977,186 @@ def urls_guardadas_view(request):
     }
 
     return render(request, "urls_guardadas.html", context)
+
+
+def exportar_dominio_individual(request, dominio_id, formato):
+    """Vista para exportar un dominio específico en diferentes formatos"""
+    try:
+        # Obtener el dominio específico
+        dominio = BusquedaDominio.objects.get(id=dominio_id, guardado=True)
+    except BusquedaDominio.DoesNotExist:
+        return HttpResponse("Dominio no encontrado", status=404)
+
+    # Preparar datos para exportación
+    datos = {
+        "id": dominio.id,
+        "dominio": dominio.dominio,
+        "dominio_normalizado": normalizar_dominio(dominio.dominio),
+        "urls_count": len(dominio.get_urls()),
+        "fecha_inicio": (
+            dominio.fecha.strftime("%Y-%m-%d %H:%M:%S") if dominio.fecha else ""
+        ),
+        "fecha_fin": (
+            dominio.fecha_fin.strftime("%Y-%m-%d %H:%M:%S") if dominio.fecha_fin else ""
+        ),
+        "usuario": dominio.usuario.username if dominio.usuario else "Anónimo",
+        "urls_list": dominio.get_urls(),
+        "urls": "\n".join(dominio.get_urls()),
+    }
+
+    # Generar nombre de archivo con dominio y timestamp
+    dominio_safe = datos["dominio"].replace(".", "_").replace("/", "_")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    if formato == "json":
+        response = HttpResponse(content_type="application/json")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{dominio_safe}_{timestamp}.json"'
+        )
+        json.dump(datos, response, ensure_ascii=False, indent=2)
+        return response
+
+    elif formato == "csv":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{dominio_safe}_{timestamp}.csv"'
+        )
+
+        # Headers para CSV
+        writer = csv.writer(response)
+        writer.writerow(["Campo", "Valor"])
+        writer.writerow(["ID", datos["id"]])
+        writer.writerow(["Dominio", datos["dominio"]])
+        writer.writerow(["Dominio Normalizado", datos["dominio_normalizado"]])
+        writer.writerow(["URLs Count", datos["urls_count"]])
+        writer.writerow(["Fecha Inicio", datos["fecha_inicio"]])
+        writer.writerow(["Fecha Fin", datos["fecha_fin"]])
+        writer.writerow(["Usuario", datos["usuario"]])
+        writer.writerow([])
+        writer.writerow(["URLs Encontradas:"])
+        for i, url in enumerate(datos["urls_list"], 1):
+            writer.writerow([f"URL {i}", url])
+        return response
+
+    elif formato == "excel":
+        try:
+            from openpyxl import Workbook
+
+            wb = Workbook()
+            ws = wb.active
+            ws.title = f"Dominio {dominio_safe}"
+
+            # Información del dominio
+            ws.append(["Campo", "Valor"])
+            ws.append(["ID", datos["id"]])
+            ws.append(["Dominio", datos["dominio"]])
+            ws.append(["Dominio Normalizado", datos["dominio_normalizado"]])
+            ws.append(["URLs Count", datos["urls_count"]])
+            ws.append(["Fecha Inicio", datos["fecha_inicio"]])
+            ws.append(["Fecha Fin", datos["fecha_fin"]])
+            ws.append(["Usuario", datos["usuario"]])
+            ws.append([])
+            ws.append(["URLs Encontradas"])
+
+            # URLs
+            for i, url in enumerate(datos["urls_list"], 1):
+                ws.append([f"URL {i}", url])
+
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = (
+                f'attachment; filename="{dominio_safe}_{timestamp}.xlsx"'
+            )
+            wb.save(response)
+            return response
+
+        except ImportError:
+            # Fallback a CSV si no está disponible openpyxl
+            return exportar_dominio_individual(request, dominio_id, "csv")
+
+    elif formato == "pdf":
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.lib.styles import getSampleStyleSheet
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=A4)
+            elements = []
+            styles = getSampleStyleSheet()
+
+            # Título simple para evitar problemas con caracteres especiales
+            title = Paragraph("Analisis de Dominio", styles["Title"])
+            elements.append(title)
+            elements.append(Spacer(1, 12))
+
+            # Información básica sin caracteres especiales
+            elements.append(Paragraph(f"ID: {datos['id']}", styles["Normal"]))
+            elements.append(Paragraph(f"Dominio: {datos['dominio']}", styles["Normal"]))
+            elements.append(
+                Paragraph(f"URLs encontradas: {datos['urls_count']}", styles["Normal"])
+            )
+            elements.append(Paragraph(f"Usuario: {datos['usuario']}", styles["Normal"]))
+            elements.append(Spacer(1, 12))
+
+            # Mostrar todas las URLs
+            elements.append(Paragraph("URLs Encontradas:", styles["Heading2"]))
+            urls_to_show = datos["urls_list"]  # Todas las URLs
+
+            for i, url in enumerate(urls_to_show, 1):
+                try:
+                    # Simplificar URL para evitar problemas
+                    url_clean = (
+                        str(url).replace("&", "and").replace("<", "").replace(">", "")
+                    )
+                    elements.append(Paragraph(f"{i}. {url_clean}", styles["Normal"]))
+                except Exception as url_error:
+                    elements.append(
+                        Paragraph(
+                            f"{i}. [URL con caracteres especiales]", styles["Normal"]
+                        )
+                    )
+
+            doc.build(elements)
+
+            response = HttpResponse(content_type="application/pdf")
+            response["Content-Disposition"] = (
+                f'attachment; filename="{dominio_safe}_{timestamp}.pdf"'
+            )
+            response.write(buffer.getvalue())
+            buffer.close()
+            return response
+
+        except Exception as e:
+            print(f"Error generando PDF: {type(e).__name__}: {str(e)}")
+            return exportar_dominio_individual(request, dominio_id, "txt")
+
+    elif formato == "txt":
+        response = HttpResponse(content_type="text/plain")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{dominio_safe}_{timestamp}.txt"'
+        )
+
+        content = f"ANÁLISIS DE DOMINIO - PRESTLABS\n"
+        content += "=" * 50 + "\n\n"
+        content += f"ID: {datos['id']}\n"
+        content += f"Dominio: {datos['dominio']}\n"
+        content += f"Dominio Normalizado: {datos['dominio_normalizado']}\n"
+        content += f"URLs encontradas: {datos['urls_count']}\n"
+        content += f"Fecha inicio: {datos['fecha_inicio']}\n"
+        content += f"Fecha fin: {datos['fecha_fin']}\n"
+        content += f"Usuario: {datos['usuario']}\n"
+        content += "\n" + "=" * 50 + "\n"
+        content += "URLS ENCONTRADAS:\n"
+        content += "=" * 50 + "\n\n"
+
+        for i, url in enumerate(datos["urls_list"], 1):
+            content += f"{i:3d}. {url}\n"
+
+        response.write(content)
+        return response
+
+    else:
+        return HttpResponse("Formato no soportado", status=400)

@@ -94,25 +94,34 @@
 																<i class="bi bi-eye me-2 text-primary"></i> Ver URLs
 															</a>
 														</li>
+														<li><hr class="dropdown-divider"></li>
+														<li class="dropdown-header"><small>Exportar</small></li>
 														<li>
-															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
-																{% csrf_token %}
-																<button type="submit" name="desmarcar_guardado" value="{{ d.id }}" class="dropdown-item d-flex align-items-center">
-																	<i class="bi bi-bookmark-dash me-2 text-warning"></i> Desmarcar guardado
-																</button>
-															</form>
+															<a class="dropdown-item d-flex align-items-center" href="{% url 'exportar_dominio_individual' d.id 'csv' %}">
+																<i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i> CSV
+															</a>
 														</li>
-														{% if d.puede_detener %}
 														<li>
-															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
-																{% csrf_token %}
-																<button type="button" class="dropdown-item d-flex align-items-center text-warning"
-																		onclick="detenerCrawlingTabla('{{ d.id }}', '{{ d.dominio }}', this.form)">
-																	<i class="bi bi-stop-circle me-2 text-warning"></i> Detener crawling
-																</button>
-															</form>
+															<a class="dropdown-item d-flex align-items-center" href="{% url 'exportar_dominio_individual' d.id 'excel' %}">
+																<i class="bi bi-file-earmark-excel me-2 text-success"></i> Excel
+															</a>
 														</li>
-														{% endif %}
+														<li>
+															<a class="dropdown-item d-flex align-items-center" href="{% url 'exportar_dominio_individual' d.id 'json' %}">
+																<i class="bi bi-file-earmark-code me-2 text-success"></i> JSON
+															</a>
+														</li>
+														<li>
+															<a class="dropdown-item d-flex align-items-center" href="{% url 'exportar_dominio_individual' d.id 'pdf' %}">
+																<i class="bi bi-file-earmark-pdf me-2 text-success"></i> PDF
+															</a>
+														</li>
+														<li>
+															<a class="dropdown-item d-flex align-items-center" href="{% url 'exportar_dominio_individual' d.id 'txt' %}">
+																<i class="bi bi-file-earmark-text me-2 text-success"></i> TXT
+															</a>
+														</li>
+														<li><hr class="dropdown-divider"></li>
 														<li>
 															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
 																{% csrf_token %}
