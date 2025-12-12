@@ -20,6 +20,7 @@ from .views_app import (
     iniciar_crawling_multiple_ajax,
     progreso_crawling_ajax,
     verificar_crawling_activo,
+    listar_crawlings_activos_ajax,
     detener_crawling_ajax,
     limpiar_procesos_fantasma_ajax,
 )
@@ -75,6 +76,11 @@ urlpatterns = [
     path("crawling/progreso/", progreso_crawling_ajax, name="progreso_crawling_ajax"),
     path(
         "crawling/activo/", verificar_crawling_activo, name="verificar_crawling_activo"
+    ),
+    path(
+        "crawling/activos/listar/",
+        listar_crawlings_activos_ajax,
+        name="listar_crawlings_activos_ajax",
     ),
     path("crawling/detener/", detener_crawling_ajax, name="detener_crawling_ajax"),
     path(

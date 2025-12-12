@@ -1075,7 +1075,46 @@ def analisis_dominio_view(request):
     regex = regex_part1 + regex_part2 + regex_part3
 
     if request.method == "POST":
-        if "eliminar_individual" in request.POST:
+        if "detener_crawling" in request.POST:
+            busqueda_id = request.POST.get("detener_crawling")
+            try:
+                # Buscar el proceso activo para esta búsqueda
+                progreso = CrawlingProgress.objects.get(
+                    busqueda_id=busqueda_id, is_done=False
+                )
+
+                # Verificar permisos - solo el propietario o admin
+                if progreso.usuario == request.user or (
+                    request.user.is_authenticated and request.user.is_staff
+                ):
+                    # Detener el proceso
+                    progreso.is_done = True
+                    progreso.save()
+
+                    # También actualizar BusquedaDominio si existe
+                    try:
+                        from django.utils import timezone
+
+                        busqueda = BusquedaDominio.objects.get(id=busqueda_id)
+                        if not busqueda.fecha_fin:
+                            busqueda.fecha_fin = timezone.now()
+                            # Actualizar URLs con el progreso actual
+                            if progreso.count > 0 and not busqueda.urls:
+                                urls_list = progreso.get_urls_list()
+                                busqueda.urls = "\n".join(urls_list[: progreso.count])
+                            busqueda.save()
+                    except BusquedaDominio.DoesNotExist:
+                        pass
+
+                    mensaje = f"Crawling detenido exitosamente para {progreso.dominio}"
+                    print(
+                        f"[STOP] Crawling detenido desde tabla: {progreso.progress_key}"
+                    )
+                else:
+                    mensaje = "No tienes permisos para detener este proceso"
+            except CrawlingProgress.DoesNotExist:
+                mensaje = "No se encontró el proceso de crawling activo"
+        elif "eliminar_individual" in request.POST:
             eliminar_id = request.POST.get("eliminar_individual")
             # Eliminar registros relacionados en orden correcto
             from django.db import connection
@@ -1353,6 +1392,8 @@ def analisis_dominio_view(request):
                 "estado_detalle": estado_detalle,
                 "estado_clase": estado_clase,
                 "url_original": b.dominio,
+                "puede_detener": progreso_activo and not progreso_activo.is_done,
+                "progress_id": progreso_activo.id if progreso_activo else None,
             }
         )
 
@@ -1614,7 +1655,7 @@ def limpiar_procesos_fantasma_ajax(request):
 
 
 def detener_crawling_ajax(request):
-    """Detiene un proceso de crawling activo"""
+    """Detiene un proceso de crawling activo específico o el más reciente"""
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
@@ -1622,20 +1663,48 @@ def detener_crawling_ajax(request):
     usuario = request.user if request.user.is_authenticated else None
 
     try:
-        # Buscar progreso activo - primero por usuario, sino cualquiera
-        progress_obj = (
-            CrawlingProgress.objects.filter(usuario=usuario, is_done=False)
-            .order_by("-created_at")
-            .first()
-        )
+        # Verificar si se especifica un ID de proceso específico
+        import json
 
-        # Si no hay del usuario, buscar cualquier crawling activo
-        if not progress_obj:
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            progress_id = body.get("progress_id")
+        except:
+            progress_id = request.POST.get("progress_id")
+
+        if progress_id:
+            # Detener proceso específico
+            try:
+                progress_obj = CrawlingProgress.objects.get(
+                    id=progress_id, is_done=False
+                )
+                # Verificar permisos - solo el usuario propietario o admin
+                if progress_obj.usuario != usuario and not (
+                    usuario and usuario.is_staff
+                ):
+                    return JsonResponse(
+                        {"error": "No tienes permisos para detener este proceso"},
+                        status=403,
+                    )
+            except CrawlingProgress.DoesNotExist:
+                return JsonResponse(
+                    {"error": "Proceso no encontrado o ya terminado"}, status=404
+                )
+        else:
+            # Buscar progreso activo - primero por usuario, sino cualquiera
             progress_obj = (
-                CrawlingProgress.objects.filter(is_done=False)
+                CrawlingProgress.objects.filter(usuario=usuario, is_done=False)
                 .order_by("-created_at")
                 .first()
             )
+
+            # Si no hay del usuario, buscar cualquier crawling activo
+            if not progress_obj:
+                progress_obj = (
+                    CrawlingProgress.objects.filter(is_done=False)
+                    .order_by("-created_at")
+                    .first()
+                )
 
         if not progress_obj:
             return JsonResponse(
@@ -1693,6 +1762,55 @@ def detener_crawling_ajax(request):
         return JsonResponse(
             {"error": f"Error interno del servidor: {str(e)}"}, status=500
         )
+
+
+def listar_crawlings_activos_ajax(request):
+    """Lista todos los crawlings activos del usuario"""
+    if request.method != "GET":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    usuario = request.user if request.user.is_authenticated else None
+
+    try:
+        from django.utils import timezone
+
+        # Buscar todos los crawlings activos del usuario (últimas 24 horas)
+        hace_24h = timezone.now() - timezone.timedelta(hours=24)
+
+        crawlings_activos = CrawlingProgress.objects.filter(
+            usuario=usuario, is_done=False, created_at__gte=hace_24h
+        ).order_by("-created_at")
+
+        procesos = []
+        for crawling in crawlings_activos:
+            # Verificar si está realmente activo (actualizado en los últimos 5 minutos)
+            hace_5min = timezone.now() - timezone.timedelta(minutes=5)
+            esta_activo = crawling.updated_at >= hace_5min
+
+            procesos.append(
+                {
+                    "id": crawling.id,
+                    "progress_key": crawling.progress_key,
+                    "dominio": crawling.dominio,
+                    "count": crawling.count,
+                    "last_url": crawling.last_url,
+                    "created_at": crawling.created_at.isoformat(),
+                    "updated_at": crawling.updated_at.isoformat(),
+                    "esta_activo": esta_activo,
+                    "busqueda_id": crawling.busqueda_id,
+                }
+            )
+
+        return JsonResponse(
+            {"success": True, "procesos": procesos, "total": len(procesos)}
+        )
+
+    except Exception as e:
+        print(f"[CRAWLINGS_ACTIVOS] Error: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
 
 
 def index(request):
