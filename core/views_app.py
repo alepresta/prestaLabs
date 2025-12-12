@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from .forms import AdminSetPasswordForm, DominioForm
-from .models import BusquedaDominio, CrawlingProgress
+from .models import BusquedaDominio, CrawlingProgress, UrlGuardada
 
 # Variable global temporal para progreso (en producción usar cache/db)
 crawling_progress = {}
@@ -1136,6 +1136,24 @@ def analisis_dominio_view(request):
                 # Finalmente eliminar la BusquedaDominio
                 BusquedaDominio.objects.filter(id=eliminar_id).delete()
                 mensaje = f"Búsqueda del dominio '{dominio_eliminado}' eliminada correctamente."
+        elif "guardar_individual" in request.POST:
+            guardar_id = request.POST.get("guardar_individual")
+            try:
+                busqueda_obj = BusquedaDominio.objects.get(id=guardar_id)
+                busqueda_obj.guardado = True
+                busqueda_obj.save()
+                mensaje = f"Dominio '{busqueda_obj.dominio}' marcado como guardado."
+            except BusquedaDominio.DoesNotExist:
+                mensaje = "No se encontró el análisis seleccionado."
+        elif "desmarcar_guardado" in request.POST:
+            desmarcar_id = request.POST.get("desmarcar_guardado")
+            try:
+                busqueda_obj = BusquedaDominio.objects.get(id=desmarcar_id)
+                busqueda_obj.guardado = False
+                busqueda_obj.save()
+                mensaje = f"Dominio '{busqueda_obj.dominio}' desmarcado como guardado."
+            except BusquedaDominio.DoesNotExist:
+                mensaje = "No se encontró el análisis seleccionado."
         elif "eliminar_seleccionados" in request.POST or "eliminar_ids" in request.POST:
             ids = request.POST.getlist("eliminar_ids")
             if ids:  # Solo proceder si hay IDs seleccionados
@@ -1411,6 +1429,7 @@ def analisis_dominio_view(request):
                 "url_original": b.dominio,
                 "puede_detener": progreso_activo and not progreso_activo.is_done,
                 "progress_id": progreso_activo.id if progreso_activo else None,
+                "guardado": b.guardado,
             }
         )
 
@@ -1447,15 +1466,58 @@ def analisis_detalle(request):
     error = None
     busquedas = []
     dominio = ""
+    mensaje = None
+
+    # Procesar acciones POST para guardar/desmarcar URLs
+    if request.method == "POST":
+        if "guardar_url" in request.POST and busqueda_id:
+            url_a_guardar = request.POST.get("guardar_url")
+            try:
+                busq = BusquedaDominio.objects.get(id=busqueda_id)
+                url_guardada, created = UrlGuardada.objects.get_or_create(
+                    url=url_a_guardar,
+                    usuario=request.user,
+                    defaults={
+                        "dominio": busq.dominio,
+                        "busqueda_dominio": busq,
+                        "titulo": "",  # Se puede extraer después con web scraping
+                    },
+                )
+                if created:
+                    mensaje = f"URL guardada exitosamente: {url_a_guardar}"
+                else:
+                    mensaje = f"La URL ya estaba guardada: {url_a_guardar}"
+            except Exception as e:
+                error = f"Error al guardar la URL: {str(e)}"
+
+        elif "desmarcar_url" in request.POST:
+            url_a_desmarcar = request.POST.get("desmarcar_url")
+            try:
+                UrlGuardada.objects.filter(
+                    url=url_a_desmarcar, usuario=request.user
+                ).delete()
+                mensaje = f"URL desmarcada exitosamente: {url_a_desmarcar}"
+            except Exception as e:
+                error = f"Error al desmarcar la URL: {str(e)}"
+
     if busqueda_id:
         try:
             busq = BusquedaDominio.objects.get(id=busqueda_id)
             busquedas = [busq]
             dominio = busq.dominio
+
+            # Obtener URLs guardadas por el usuario para esta búsqueda
+            urls_guardadas = set(
+                UrlGuardada.objects.filter(
+                    usuario=request.user, busqueda_dominio=busq
+                ).values_list("url", flat=True)
+            )
+
         except BusquedaDominio.DoesNotExist:
             error = "No se encontró la búsqueda solicitada."
     else:
         error = "No se especificó una búsqueda."
+        urls_guardadas = set()
 
     form = DominioForm(initial={"dominio": dominio})
     return render(
@@ -1466,6 +1528,8 @@ def analisis_detalle(request):
             "dominio": dominio,
             "busquedas": busquedas,
             "error": error,
+            "mensaje": mensaje,
+            "urls_guardadas": urls_guardadas,
         },
     )
 
@@ -1831,3 +1895,79 @@ def listar_crawlings_activos_ajax(request):
 def index(request):
     """Vista principal del dashboard institucional"""
     return render(request, "dashboard/index.html")
+
+
+def dominios_guardados_view(request):
+    """Vista para mostrar solo los dominios guardados"""
+    # Obtener solo los dominios marcados como guardados
+    dominios_guardados = BusquedaDominio.objects.filter(guardado=True).order_by(
+        "-fecha"
+    )
+
+    # Aplicar paginación
+    paginator = Paginator(dominios_guardados, 20)  # 20 dominios por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Procesar datos para la tabla
+    dominios_tabla = []
+    for b in page_obj:
+        dom_norm = normalizar_dominio(b.dominio)
+
+        # Verificar si tiene crawling activo
+        tiene_progreso_activo = CrawlingProgress.objects.filter(
+            busqueda_id=b.id, is_done=False
+        ).exists()
+
+        dominios_tabla.append(
+            {
+                "id": b.id,
+                "dominio": b.dominio,
+                "dominio_normalizado": dom_norm,
+                "fecha": b.fecha,
+                "fecha_fin": b.fecha_fin,
+                "usuario": b.usuario,
+                "urls_count": len(b.get_urls()),
+                "guardado": b.guardado,
+                "puede_detener": tiene_progreso_activo,
+            }
+        )
+
+    context = {
+        "dominios": dominios_tabla,
+        "page_obj": page_obj,
+        "total_guardados": dominios_guardados.count(),
+        "titulo_pagina": "Dominios Guardados",
+    }
+
+    return render(request, "dominios_guardados.html", context)
+
+
+def urls_guardadas_view(request):
+    """Vista para mostrar solo las URLs individuales guardadas"""
+    # Procesar acciones POST
+    if request.method == "POST":
+        if "desmarcar_url_guardada" in request.POST:
+            url_id = request.POST.get("desmarcar_url_guardada")
+            try:
+                UrlGuardada.objects.filter(id=url_id, usuario=request.user).delete()
+            except Exception:
+                pass  # Manejar error silenciosamente por ahora
+
+    # Obtener solo las URLs guardadas por el usuario actual
+    urls_guardadas = UrlGuardada.objects.filter(usuario=request.user).order_by(
+        "-created_at"
+    )
+
+    # Aplicar paginación
+    paginator = Paginator(urls_guardadas, 20)  # 20 URLs por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "urls_guardadas": page_obj,
+        "page_obj": page_obj,
+        "total_guardadas": urls_guardadas.count(),
+    }
+
+    return render(request, "urls_guardadas.html", context)

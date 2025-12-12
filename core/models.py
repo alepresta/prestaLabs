@@ -56,6 +56,9 @@ class BusquedaDominio(BaseModel):
     urls = models.TextField(
         help_text="Lista de URLs encontradas, separadas por salto de línea"
     )
+    guardado = models.BooleanField(
+        default=False, help_text="Indica si el dominio ha sido marcado como guardado"
+    )
 
     def get_urls(self):
         return self.urls.split("\n") if self.urls else []
@@ -66,3 +69,30 @@ class BusquedaDominio(BaseModel):
             if self.usuario
             else f"{self.dominio} ({self.fecha:%Y-%m-%d %H:%M})"
         )
+
+
+class UrlGuardada(BaseModel):
+    """Modelo para almacenar URLs individuales guardadas por el usuario"""
+
+    url = models.URLField(max_length=2000, help_text="URL individual guardada")
+    titulo = models.CharField(
+        max_length=500, blank=True, help_text="Título de la página (opcional)"
+    )
+    dominio = models.CharField(
+        max_length=255, help_text="Dominio al que pertenece la URL"
+    )
+    busqueda_dominio = models.ForeignKey(
+        BusquedaDominio,
+        on_delete=models.CASCADE,
+        help_text="Búsqueda de dominio de la que proviene esta URL",
+    )
+    usuario = models.ForeignKey(
+        User, on_delete=models.CASCADE, help_text="Usuario que guardó la URL"
+    )
+    notas = models.TextField(blank=True, help_text="Notas adicionales del usuario")
+
+    class Meta:
+        unique_together = ["url", "usuario"]  # Evitar duplicados por usuario
+
+    def __str__(self):
+        return f"{self.url} (guardada por {self.usuario.username})"

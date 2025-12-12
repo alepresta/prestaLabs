@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Dominios Guardados | PrestaLabs{% endblock %}
+{% block content %}
+<div class="container-xl py-3">
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<h2 class="fw-bold text-dark">
+					<i class="bi bi-bookmark-star me-2"></i>Dominios Guardados
+				</h2>
+				<div class="d-flex align-items-center">
+					<span class="badge bg-primary">{{ total_guardados }} dominio{{ total_guardados|pluralize }}</span>
+					<a href="{% url 'analisis_dominio' %}" class="btn btn-outline-primary btn-sm ms-2">
+						<i class="bi bi-arrow-left me-1"></i>Volver al análisis
+					</a>
+				</div>
+			</div>
+
+			{% if total_guardados > 0 %}
+				<div class="card shadow-sm">
+					<div class="card-body p-0">
+						<div class="table-responsive">
+							<table class="table table-hover mb-0" style="font-size:0.9em;">
+								<thead class="table-light">
+									<tr>
+										<th class="fw-bold">Dominio</th>
+										<th class="fw-bold text-center">URLs</th>
+										<th class="fw-bold text-center">Fecha inicio</th>
+										<th class="fw-bold text-center">Fecha fin</th>
+										<th class="fw-bold text-center">Estado</th>
+										<th class="fw-bold text-center">Usuario</th>
+										<th class="text-center">Acciones</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for d in dominios %}
+										<tr>
+											<td class="align-middle">
+												<div class="d-flex align-items-center">
+													<i class="bi bi-bookmark-fill text-warning me-2"></i>
+													<div>
+														<div class="fw-semibold text-primary">{{ d.dominio }}</div>
+														<small class="text-muted">{{ d.dominio_normalizado }}</small>
+													</div>
+												</div>
+											</td>
+											<td class="text-center align-middle">
+												<span class="badge bg-info">{{ d.urls_count }}</span>
+											</td>
+											<td class="text-center align-middle">
+												<small class="text-muted">
+													{{ d.fecha|date:"d/m/Y H:i" }}
+												</small>
+											</td>
+											<td class="text-center align-middle">
+												{% if d.fecha_fin %}
+													<small class="text-success">
+														{{ d.fecha_fin|date:"d/m/Y H:i" }}
+													</small>
+												{% else %}
+													<small class="text-muted">En progreso</small>
+												{% endif %}
+											</td>
+											<td class="text-center align-middle">
+												{% if d.puede_detener %}
+													<span class="badge bg-warning">
+														<i class="bi bi-clock-history me-1"></i>Activo
+													</span>
+												{% elif d.fecha_fin %}
+													<span class="badge bg-success">
+														<i class="bi bi-check-circle me-1"></i>Completado
+													</span>
+												{% else %}
+													<span class="badge bg-secondary">
+														<i class="bi bi-pause-circle me-1"></i>Detenido
+													</span>
+												{% endif %}
+											</td>
+											<td class="text-center align-middle">
+												{% if d.usuario %}
+													<small class="text-muted">{{ d.usuario.username }}</small>
+												{% else %}
+													<small class="text-muted">Anónimo</small>
+												{% endif %}
+											</td>
+											<td class="text-center align-middle">
+												<div class="dropdown">
+													<button class="btn btn-light btn-sm dropdown-toggle px-2 py-1" type="button" id="accionesDropdown{{ d.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+														<i class="bi bi-three-dots-vertical" style="font-size:1.3em;"></i>
+													</button>
+													<ul class="dropdown-menu" aria-labelledby="accionesDropdown{{ d.id }}">
+														<li>
+															<a class="dropdown-item d-flex align-items-center" href="/analisis/detalle/?id={{ d.id }}">
+																<i class="bi bi-eye me-2 text-primary"></i> Ver URLs
+															</a>
+														</li>
+														<li>
+															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
+																{% csrf_token %}
+																<button type="submit" name="desmarcar_guardado" value="{{ d.id }}" class="dropdown-item d-flex align-items-center">
+																	<i class="bi bi-bookmark-dash me-2 text-warning"></i> Desmarcar guardado
+																</button>
+															</form>
+														</li>
+														{% if d.puede_detener %}
+														<li>
+															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
+																{% csrf_token %}
+																<button type="button" class="dropdown-item d-flex align-items-center text-warning"
+																		onclick="detenerCrawlingTabla('{{ d.id }}', '{{ d.dominio }}', this.form)">
+																	<i class="bi bi-stop-circle me-2 text-warning"></i> Detener crawling
+																</button>
+															</form>
+														</li>
+														{% endif %}
+														<li>
+															<form method="post" action="{% url 'analisis_dominio' %}" style="display:inline;">
+																{% csrf_token %}
+																<button type="submit" name="eliminar_individual" value="{{ d.id }}" class="dropdown-item d-flex align-items-center">
+																	<i class="bi bi-trash me-2 text-danger"></i> Eliminar
+																</button>
+															</form>
+														</li>
+													</ul>
+												</div>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Paginación -->
+				{% if page_obj.has_other_pages %}
+					<nav aria-label="Navegación de dominios guardados" class="mt-4">
+						<ul class="pagination justify-content-center">
+							{% if page_obj.has_previous %}
+								<li class="page-item">
+									<a class="page-link" href="?page=1">Primera</a>
+								</li>
+								<li class="page-item">
+									<a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+								</li>
+							{% endif %}
+
+							<li class="page-item active">
+								<span class="page-link">
+									Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+								</span>
+							</li>
+
+							{% if page_obj.has_next %}
+								<li class="page-item">
+									<a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+								</li>
+								<li class="page-item">
+									<a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+								</li>
+							{% endif %}
+						</ul>
+					</nav>
+				{% endif %}
+			{% else %}
+				<!-- Estado vacío -->
+				<div class="card border-0 bg-light">
+					<div class="card-body text-center py-5">
+						<div class="mb-4">
+							<i class="bi bi-bookmark text-muted" style="font-size: 4rem;"></i>
+						</div>
+						<h4 class="text-muted mb-3">No hay dominios guardados</h4>
+						<p class="text-muted mb-4">
+							Aún no has marcado ningún dominio como guardado.<br>
+							Ve al análisis de dominios y marca los que te interesen.
+						</p>
+						<a href="{% url 'analisis_dominio' %}" class="btn btn-primary">
+							<i class="bi bi-search me-2"></i>Ir al análisis de dominios
+						</a>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+<script>
+// Función para detener crawling desde la tabla
+function detenerCrawlingTabla(busquedaId, dominio, form) {
+    if (confirm(`¿Estás seguro de que quieres detener el crawling de "${dominio}"?`)) {
+        // Crear input hidden para el ID del progreso
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'detener_progreso';
+        input.value = busquedaId;
+        form.appendChild(input);
+        
+        // Enviar formulario
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
