@@ -6,9 +6,13 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ideal-xylophone-v69xq754gvjhw9qj-5001.app.github.dev",
     "https://localhost:5001",
     "https://localhost:8000",
+    "https://localhost:8001",
     "http://localhost:8000",
+    "http://localhost:8001",
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:8001",
     "https://127.0.0.1:8000",
+    "https://127.0.0.1:8001",
 ]
 """
 Django settings for prestaLabs project.
@@ -35,7 +39,7 @@ SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=True, cast=bool)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "85.31.224.145"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "localhost:8001", "127.0.0.1:8001", "85.31.224.145"]
 
 
 # Application definition

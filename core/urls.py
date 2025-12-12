@@ -1,6 +1,7 @@
-# Eliminado bloque incorrecto y duplicado
+# Core URLs for PrestaLabs
 from django.urls import path
 
+# Import main views
 from .views_app import (
     index,
     api_status,
@@ -19,12 +20,16 @@ from .views_app import (
     nuevo_reporte_view,
     listar_usuarios_view,
     admin_set_password_view,
+)
+
+# Import crawling views from new module
+from .views.crawling_views import (
     iniciar_crawling_ajax,
-    iniciar_crawling_multiple_ajax,
     progreso_crawling_ajax,
     verificar_crawling_activo,
-    listar_crawlings_activos_ajax,
     detener_crawling_ajax,
+    iniciar_crawling_multiple_ajax,
+    listar_crawlings_activos_ajax,
     limpiar_procesos_fantasma_ajax,
 )
 from core.views.analisis_estado import analisis_estado
