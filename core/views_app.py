@@ -1133,13 +1133,6 @@ def analisis_dominio_view(request):
                 except BusquedaDominio.DoesNotExist:
                     dominio_eliminado = "desconocido"
 
-                from django.db import connection
-
-                cursor = connection.cursor()
-                # Eliminar de core_analisisurl si existe
-                cursor.execute(
-                    "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id]
-                )
                 # Eliminar de CrawlingProgress
                 CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
                 # Finalmente eliminar la BusquedaDominio
@@ -1176,16 +1169,6 @@ def analisis_dominio_view(request):
                     mensaje = "No se pueden eliminar los análisis seleccionados porque hay procesos de crawling activos. Por favor espera a que terminen o detén los procesos antes de eliminar."
                 else:
                     # Si no hay crawling activo, proceder con la eliminación
-                    from django.db import connection
-
-                    cursor = connection.cursor()
-                    # Eliminar registros relacionados en orden correcto
-                    for id_val in ids:
-                        # Eliminar de core_analisisurl si existe
-                        cursor.execute(
-                            "DELETE FROM core_analisisurl WHERE busqueda_id = %s",
-                            [id_val],
-                        )
                     # Eliminar de CrawlingProgress
                     CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
                     # Finalmente eliminar las BusquedaDominio
@@ -2088,14 +2071,6 @@ def dominios_guardados_view(request):
                 except BusquedaDominio.DoesNotExist:
                     dominio_eliminado = "desconocido"
 
-                from django.db import connection
-
-                cursor = connection.cursor()
-                # Eliminar de core_analisisurl si existe
-                cursor.execute(
-                    "DELETE FROM core_analisisurl WHERE busqueda_id = %s",
-                    [eliminar_id],
-                )
                 # Eliminar de CrawlingProgress
                 CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
                 # Finalmente eliminar la BusquedaDominio

@@ -275,9 +275,50 @@ function copiar_env() {
 
 function migrar_db() {
     activar_entorno
-    python manage.py makemigrations
-    python manage.py migrate
-    echo "Migraciones aplicadas."
+    echo "[MIGRATE] Verificando estado de migraciones..."
+    
+    # Mostrar migraciones pendientes
+    python manage.py showmigrations --plan | grep -E '\[ \]' && echo "[INFO] Hay migraciones pendientes" || echo "[INFO] No hay migraciones pendientes"
+    
+    echo "[MIGRATE] Ejecutando makemigrations..."
+    if python manage.py makemigrations; then
+        echo "[OK] Makemigrations completado"
+    else
+        echo "[ERROR] Falló makemigrations"
+        exit 1
+    fi
+    
+    echo "[MIGRATE] Ejecutando migrate..."
+    if python manage.py migrate; then
+        echo "[OK] Migraciones aplicadas correctamente"
+        
+        # Verificar que las tablas críticas existen
+        echo "[VERIFY] Verificando integridad de la base de datos..."
+        python manage.py shell -c "
+from django.db import connection
+cursor = connection.cursor()
+try:
+    cursor.execute(\"SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'core_%';\")
+    tables = [row[0] for row in cursor.fetchall()]
+    print(f'[OK] Tablas core encontradas: {len(tables)}')
+    for table in sorted(tables):
+        print(f'  - {table}')
+    
+    # Verificar tabla específica que causaba problemas
+    if 'core_analisisurlindividual' in tables:
+        print('[OK] Tabla core_analisisurlindividual existe correctamente')
+    else:
+        print('[WARN] Tabla core_analisisurlindividual no encontrada')
+        
+except Exception as e:
+    print(f'[ERROR] Error verificando tablas: {e}')
+    exit(1)
+" || echo "[WARN] No se pudo verificar integridad de tablas"
+        
+    else
+        echo "[ERROR] Falló migrate"
+        exit 1
+    fi
 }
 
 function recolectar_estaticos() {
