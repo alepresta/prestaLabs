@@ -2385,7 +2385,7 @@ def exportar_dominio_individual(request, dominio_id, formato):
                         str(url).replace("&", "and").replace("<", "").replace(">", "")
                     )
                     elements.append(Paragraph(f"{i}. {url_clean}", styles["Normal"]))
-                except Exception as url_error:
+                except Exception:
                     elements.append(
                         Paragraph(
                             f"{i}. [URL con caracteres especiales]", styles["Normal"]
@@ -2405,6 +2405,7 @@ def exportar_dominio_individual(request, dominio_id, formato):
         except Exception as e:
             print(f"Error generando PDF: {type(e).__name__}: {str(e)}")
             import traceback
+
             print(f"Traceback completo:")
             traceback.print_exc()
             print(f"Datos que causaron el error: {datos}")
@@ -2416,7 +2417,7 @@ def exportar_dominio_individual(request, dominio_id, formato):
             f'attachment; filename="{dominio_safe}_{timestamp}.txt"'
         )
 
-        content = f"ANÁLISIS DE DOMINIO - PRESTLABS\n"
+        content = "ANÁLISIS DE DOMINIO - PRESTLABS\n"
         content += "=" * 50 + "\n\n"
         content += f"ID: {datos['id']}\n"
         content += f"Dominio: {datos['dominio']}\n"
