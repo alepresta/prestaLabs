@@ -7,10 +7,11 @@ import sys
 import json
 
 # Configurar Django
-sys.path.append('/workspaces/prestaLabs')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'prestaLabs.settings')
+sys.path.append("/workspaces/prestaLabs")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "prestaLabs.settings")
 
 import django
+
 django.setup()
 
 from django.test import RequestFactory
