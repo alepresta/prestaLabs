@@ -1,0 +1,220 @@
+/*
+ * Sistema de Popups PrestaLabs
+ * Estilos adicionales para los modales centralizados
+ */
+
+/* Animaciones suaves para los modales */
+.modal.fade .modal-dialog {
+    transform: translateY(-25px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0);
+}
+
+/* Estilos mejorados para los diferentes tipos de modal */
+.modal-content {
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+/* Fondo azul uniforme para todos los modales */
+#modalConfirmacion .modal-header,
+#modalExito .modal-header,
+#modalError .modal-header,
+#modalAlerta .modal-header {
+    background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+    color: white;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Diferenciación por colores de texto en iconos */
+#modalConfirmacion .modal-title i {
+    color: #ffc107; /* Amarillo para confirmación/advertencia */
+}
+
+#modalExito .modal-title i {
+    color: #28a745; /* Verde para éxito */
+}
+
+#modalError .modal-title i {
+    color: #dc3545; /* Rojo para error/peligro */
+}
+
+#modalAlerta .modal-title i {
+    color: #17a2b8; /* Azul claro para información */
+}
+
+#modalConfirmacion .modal-header .btn-close,
+#modalExito .modal-header .btn-close,
+#modalError .modal-header .btn-close,
+#modalAlerta .modal-header .btn-close {
+    filter: invert(1);
+}
+
+/* Mejoras en el cuerpo del modal */
+.modal-body {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.modal-body p {
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Botones mejorados */
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.modal-footer .btn {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+/* Efectos hover para botones */
+.modal-footer .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Indicador de carga para botones */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1rem;
+    height: 1rem;
+    margin: -0.5rem 0 0 -0.5rem;
+    border: 2px solid #ffffff;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-loading-spin 0.75s linear infinite;
+}
+
+@keyframes btn-loading-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive para móviles */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}
+
+/* Overlay mejorado */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Iconos mejorados en títulos */
+.modal-title i {
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+/* Botones azules uniformes para todos los modales */
+#btnConfirmar,
+#btnAlertaOK,
+#btnExitoOK,
+#btnErrorOK {
+    background-color: #0984e3;
+    border-color: #0984e3;
+    color: white;
+}
+
+#btnConfirmar:hover,
+#btnAlertaOK:hover,
+#btnExitoOK:hover,
+#btnErrorOK:hover {
+    background-color: #0770c4;
+    border-color: #0770c4;
+}
+
+/* Botón de confirmación rojo para acciones peligrosas */
+#btnConfirmar.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#btnConfirmar.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Animación de entrada para iconos */
+.modal-title i {
+    animation: modal-icon-bounce 0.6s ease-out;
+}
+
+@keyframes modal-icon-bounce {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Mejoras para accesibilidad */
+.modal:focus {
+    outline: none;
+}
+
+.modal-content:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Estados de hover para elementos interactivos */
+.btn-close:hover {
+    opacity: 0.75;
+    transform: rotate(90deg);
+    transition: all 0.2s ease;
+}
+
+/* Transiciones suaves para todos los elementos del modal */
+.modal-dialog,
+.modal-header,
+.modal-body,
+.modal-footer,
+.btn {
+    transition: all 0.2s ease;
+}

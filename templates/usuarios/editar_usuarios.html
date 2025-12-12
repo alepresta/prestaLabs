@@ -101,29 +101,7 @@
                     </svg>
                     Cambiar contraseña
                 </a>
-                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalEliminarUsuario{{ usuario.id }}">Eliminar</button>
-                <!-- Modal de confirmación -->
-                <div class="modal fade" id="modalEliminarUsuario{{ usuario.id }}" tabindex="-1" aria-labelledby="modalEliminarUsuarioLabel{{ usuario.id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="modalEliminarUsuarioLabel{{ usuario.id }}">Confirmar eliminación</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-                            <div class="modal-body">
-                                ¿Estás seguro que deseas eliminar al usuario <strong>{{ usuario.username }}</strong>? Esta acción no se puede deshacer.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <form method="post" style="display:inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="eliminar_id" value="{{ usuario.id }}">
-                                    <button type="submit" class="btn btn-danger">Eliminar definitivamente</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarUsuarioEditar('{{ usuario.username }}', {{ usuario.id }})">Eliminar</button>
             </td>
         </tr>
         {% empty %}
@@ -156,4 +134,40 @@
   </ul>
 </nav>
 {% endif %}
+
+<script>
+function confirmarEliminarUsuarioEditar(username, userId) {
+    PrestaLabs.Popup.confirmar(
+        `¿Estás seguro que deseas eliminar al usuario "${username}"? Esta acción no se puede deshacer.`,
+        function() {
+            // Confirmar: crear y enviar formulario
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.style.display = 'none';
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            const userIdInput = document.createElement('input');
+            userIdInput.type = 'hidden';
+            userIdInput.name = 'eliminar_id';
+            userIdInput.value = userId;
+            
+            form.appendChild(csrfInput);
+            form.appendChild(userIdInput);
+            document.body.appendChild(form);
+            form.submit();
+        },
+        null, // Cancelar: no hacer nada
+        {
+            titulo: 'Eliminar Usuario',
+            textoConfirmar: 'Eliminar definitivamente',
+            textoCancelar: 'Cancelar',
+            tipoBoton: 'danger'
+        }
+    );
+}
+</script>
 {% endblock %}

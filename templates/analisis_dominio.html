@@ -195,9 +195,8 @@
 													<li>
 														<form method="post" action="" style="display:inline;">
 															{% csrf_token %}
-															<button type="submit" name="detener_crawling" value="{{ d.id }}" 
-																	class="dropdown-item d-flex align-items-center text-warning"
-																	onclick="return confirm('¿Estás seguro de que quieres detener el crawling de {{ d.dominio }}?')">
+															<button type="button" class="dropdown-item d-flex align-items-center text-warning"
+																	onclick="detenerCrawlingTabla('{{ d.id }}', '{{ d.dominio }}', this.form)">
 																<i class="bi bi-stop-circle me-2 text-warning"></i> Detener crawling
 															</button>
 														</form>
@@ -630,15 +629,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Función para detener crawling
 function detenerCrawling() {
-	if (!confirm('¿Estás seguro de que quieres detener el crawling actual?')) {
-		return;
-	}
-	
+	// Usar el sistema centralizado de popups
+	PrestaLabs.Popup.confirmar(
+		'¿Estás seguro de que quieres detener el crawling actual?',
+		function() {
+			// Confirmar: continuar con el proceso
+			const btnDetener = document.getElementById('btn-detener-crawling');
+			if (!btnDetener) {
+				PrestaLabs.Popup.error('No se encontró el botón detener');
+				return;
+			}
+			ejecutarDetencion();
+		},
+		null, // Cancelar: no hacer nada
+		{
+			titulo: 'Detener Crawling',
+			textoConfirmar: 'Sí, detener',
+			textoCancelar: 'Cancelar',
+			tipoBoton: 'warning'
+		}
+	);
+}
+
+function ejecutarDetencion() {
 	const btnDetener = document.getElementById('btn-detener-crawling');
-	if (!btnDetener) {
-		alert('No se encontró el botón detener');
-		return;
-	}
 	
 	btnDetener.disabled = true;
 	btnDetener.innerHTML = '<i class="bi bi-hourglass me-1"></i>Deteniendo...';
@@ -654,24 +668,48 @@ function detenerCrawling() {
 	.then(data => {
 		console.log('Respuesta detener crawling:', data);
 		if (data.success) {
-			alert('✅ Crawling detenido: ' + (data.dominio || 'exitosamente'));
+			PrestaLabs.Popup.exito('Crawling detenido: ' + (data.dominio || 'exitosamente'), function() {
+				// Recargar página para mostrar estado actualizado
+				window.location.reload();
+			});
 			if (typeof polling !== 'undefined' && polling) {
 				clearInterval(polling);
 			}
-			// Recargar página para mostrar estado actualizado
-			setTimeout(() => { window.location.reload(); }, 1000);
 		} else {
-			alert('❌ Error: ' + (data.error || 'No se pudo detener el crawling'));
+			PrestaLabs.Popup.error(data.error || 'No se pudo detener el crawling');
 			btnDetener.disabled = false;
 			btnDetener.innerHTML = '<i class="bi bi-stop-circle me-1"></i>Detener';
 		}
 	})
 	.catch(error => {
 		console.error('Error deteniendo crawling:', error);
-		alert('❌ Error de conexión al detener el crawling');
+		PrestaLabs.Popup.error('Error de conexión al detener el crawling');
 		btnDetener.disabled = false;
 		btnDetener.innerHTML = '<i class="bi bi-stop-circle me-1"></i>Detener';
 	});
+}
+
+// Función para detener crawling desde la tabla
+function detenerCrawlingTabla(progressId, dominio, form) {
+	PrestaLabs.Popup.confirmar(
+		`¿Estás seguro de que quieres detener el crawling de ${dominio}?`,
+		function() {
+			// Confirmar: enviar el formulario
+			const hiddenInput = document.createElement('input');
+			hiddenInput.type = 'hidden';
+			hiddenInput.name = 'detener_crawling';
+			hiddenInput.value = progressId;
+			form.appendChild(hiddenInput);
+			form.submit();
+		},
+		null, // Cancelar: no hacer nada
+		{
+			titulo: 'Detener Crawling',
+			textoConfirmar: 'Sí, detener',
+			textoCancelar: 'Cancelar',
+			tipoBoton: 'warning'
+		}
+	);
 }
 
 </script>

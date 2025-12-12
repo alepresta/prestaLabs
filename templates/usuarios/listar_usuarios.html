@@ -54,11 +54,30 @@
                 <form method="post" action="/usuarios/eliminar/" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" value="{{ usuario.id }}">
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este usuario?');">Eliminar</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminarUsuario('{{ usuario.username }}', this.form)">Eliminar</button>
                 </form>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+function confirmarEliminarUsuario(username, form) {
+	PrestaLabs.Popup.confirmar(
+		`¿Seguro que deseas eliminar al usuario "${username}"?`,
+		function() {
+			// Confirmar: enviar el formulario
+			form.submit();
+		},
+		null, // Cancelar: no hacer nada
+		{
+			titulo: 'Eliminar Usuario',
+			textoConfirmar: 'Sí, eliminar',
+			textoCancelar: 'Cancelar',
+			tipoBoton: 'danger'
+		}
+	);
+}
+</script>
 {% endblock %}
