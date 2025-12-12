@@ -1077,12 +1077,32 @@ def analisis_dominio_view(request):
     if request.method == "POST":
         if "eliminar_individual" in request.POST:
             eliminar_id = request.POST.get("eliminar_individual")
+            # Eliminar registros relacionados en orden correcto
+            from django.db import connection
+            cursor = connection.cursor()
+            # Eliminar de core_analisisurl si existe
+            cursor.execute("DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id])
+            # Eliminar de CrawlingProgress
+            CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
+            # Finalmente eliminar la BusquedaDominio
             BusquedaDominio.objects.filter(id=eliminar_id).delete()
             mensaje = "Búsqueda eliminada correctamente."
-        elif "eliminar_seleccionados" in request.POST:
+        elif "eliminar_seleccionados" in request.POST or "eliminar_ids" in request.POST:
             ids = request.POST.getlist("eliminar_ids")
-            BusquedaDominio.objects.filter(id__in=ids).delete()
-            mensaje = f"{len(ids)} búsquedas eliminadas correctamente."
+            if ids:  # Solo proceder si hay IDs seleccionados
+                from django.db import connection
+                cursor = connection.cursor()
+                # Eliminar registros relacionados en orden correcto
+                for id_val in ids:
+                    # Eliminar de core_analisisurl si existe
+                    cursor.execute("DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val])
+                # Eliminar de CrawlingProgress
+                CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
+                # Finalmente eliminar las BusquedaDominio
+                BusquedaDominio.objects.filter(id__in=ids).delete()
+                mensaje = f"{len(ids)} búsquedas eliminadas correctamente."
+            else:
+                mensaje = "No se seleccionaron elementos para eliminar."
         else:
             form = DominioForm(request.POST)
             if form.is_valid():
