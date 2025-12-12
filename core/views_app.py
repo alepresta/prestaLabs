@@ -1079,9 +1079,12 @@ def analisis_dominio_view(request):
             eliminar_id = request.POST.get("eliminar_individual")
             # Eliminar registros relacionados en orden correcto
             from django.db import connection
+
             cursor = connection.cursor()
             # Eliminar de core_analisisurl si existe
-            cursor.execute("DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id])
+            cursor.execute(
+                "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [eliminar_id]
+            )
             # Eliminar de CrawlingProgress
             CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
             # Finalmente eliminar la BusquedaDominio
@@ -1091,11 +1094,14 @@ def analisis_dominio_view(request):
             ids = request.POST.getlist("eliminar_ids")
             if ids:  # Solo proceder si hay IDs seleccionados
                 from django.db import connection
+
                 cursor = connection.cursor()
                 # Eliminar registros relacionados en orden correcto
                 for id_val in ids:
                     # Eliminar de core_analisisurl si existe
-                    cursor.execute("DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val])
+                    cursor.execute(
+                        "DELETE FROM core_analisisurl WHERE busqueda_id = %s", [id_val]
+                    )
                 # Eliminar de CrawlingProgress
                 CrawlingProgress.objects.filter(busqueda_id__in=ids).delete()
                 # Finalmente eliminar las BusquedaDominio
