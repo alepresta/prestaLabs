@@ -115,6 +115,63 @@ function instalar_redis() {
     echo "Redis instalado y ejecutándose."
 }
 
+function cerrar_procesos() {
+    echo -e "\n========== CERRANDO PROCESOS ACTIVOS =========="
+    
+    # 1. Cerrar procesos Django en puerto 5001
+    echo "[STOP] Buscando procesos en puerto 5001..."
+    PID=$(lsof -ti:5001 2>/dev/null || true)
+    if [ ! -z "$PID" ] && [ "$PID" != "true" ]; then
+        echo "[STOP] Matando proceso Django en puerto 5001 (PID: $PID)"
+        kill -TERM $PID 2>/dev/null || true
+        sleep 3
+        # Si aún existe, forzar
+        if kill -0 $PID 2>/dev/null; then
+            echo "[STOP] Forzando cierre del proceso $PID"
+            kill -9 $PID 2>/dev/null || true
+        fi
+    else
+        echo "[INFO] No hay procesos activos en puerto 5001"
+    fi
+    
+    # 2. Cerrar procesos Django por nombre
+    echo "[STOP] Cerrando procesos Django (manage.py runserver)..."
+    pkill -f "manage.py runserver" 2>/dev/null || true
+    
+    # 3. Cerrar procesos Celery si existen
+    echo "[STOP] Cerrando procesos Celery..."
+    pkill -f "celery worker" 2>/dev/null || true
+    pkill -f "celery beat" 2>/dev/null || true
+    
+    # 4. Cerrar procesos Python relacionados con PrestaLabs
+    echo "[STOP] Cerrando otros procesos Python del proyecto..."
+    pkill -f "prestaLabs" 2>/dev/null || true
+    
+    # 5. Limpiar archivos temporales
+    echo "[CLEAN] Limpiando archivos temporales..."
+    if [ -f nohup.out ]; then
+        rm nohup.out
+        echo "[CLEAN] Eliminado nohup.out"
+    fi
+    
+    if [ -f celery.pid ]; then
+        rm celery.pid
+        echo "[CLEAN] Eliminado celery.pid"
+    fi
+    
+    # 6. Verificar que los procesos se cerraron
+    sleep 2
+    REMAINING=$(ps aux | grep -E "(manage.py|celery)" | grep -v grep | wc -l)
+    if [ "$REMAINING" -gt 0 ]; then
+        echo "[WARN] Aún quedan $REMAINING procesos relacionados activos"
+        ps aux | grep -E "(manage.py|celery)" | grep -v grep
+    else
+        echo "[OK] Todos los procesos fueron cerrados exitosamente"
+    fi
+    
+    echo "========== PROCESOS CERRADOS =========="
+}
+
 function actualizar_codigo() {
     if [ -f nohup.out ]; then
         echo "Eliminando nohup.out para evitar conflictos de git..."
@@ -127,19 +184,13 @@ function actualizar_codigo() {
 
 function instalar_todo() {
     echo -e "\n========== INICIO INSTALACIÓN COMPLETA =========="
-    # Cerrar proceso en puerto 5001 si existe
-    PID=$(lsof -ti:5001 2>/dev/null || true)
-    if [ ! -z "$PID" ] && [ "$PID" != "true" ]; then
-        echo "Matando proceso en puerto 5001 (PID: $PID)"
-        kill -9 $PID 2>/dev/null || true
-    fi
-    # Eliminar logs de nohup antes de la instalación para evitar conflictos de git
-    if [ -f nohup.out ]; then
-        echo "Eliminando nohup.out para evitar conflictos de git..."
-        rm nohup.out
-    fi
-
-    echo "Actualizando código desde origin/main..."
+    
+    # PASO 1: Cerrar todos los procesos activos antes del deploy
+    echo "[PRE-DEPLOY] Limpiando procesos activos..."
+    cerrar_procesos
+    
+    # PASO 2: Actualizar código
+    echo "[DEPLOY] Actualizando código desde origin/main..."
     if git pull origin main; then
         echo "Código actualizado correctamente."
     else
@@ -174,6 +225,7 @@ function ayuda() {
     echo "  superusuario       - Crear superusuario"
     echo "  servidor           - Iniciar servidor Django"
     echo "  reiniciar_servidor - Reiniciar el servidor Django en segundo plano"
+    echo "  cerrar_procesos    - Cerrar todos los procesos activos (Django, Celery, etc.)"
     echo "  celery             - Iniciar worker Celery"
     echo "  cerrar             - Desactivar entorno virtual"
     echo "  redis              - Instalar y ejecutar Redis"
@@ -235,11 +287,26 @@ function recolectar_estaticos() {
 }
 
 function reiniciar_servidor() {
-    pkill -f "manage.py runserver" 2>/dev/null || true
-    echo "Servidor Django detenido. Reiniciando en puerto 5001..."
+    echo -e "\n========== REINICIANDO SERVIDOR =========="
+    # Usar la función de cerrar procesos para una limpieza más completa
+    cerrar_procesos
+    
+    echo "[START] Iniciando servidor Django en puerto 5001..."
     activar_entorno
     nohup python manage.py runserver 0.0.0.0:5001 > nohup.out 2>&1 &
-    echo "Servidor Django iniciado en segundo plano en puerto 5001. Puedes cerrar la terminal y la app seguirá corriendo."
+    
+    # Verificar que el servidor inició correctamente
+    sleep 3
+    PID=$(lsof -ti:5001 2>/dev/null || true)
+    if [ ! -z "$PID" ] && [ "$PID" != "true" ]; then
+        echo "[OK] Servidor Django iniciado correctamente (PID: $PID)"
+        echo "[INFO] Accesible en http://localhost:5001"
+        echo "[INFO] Logs en nohup.out"
+    else
+        echo "[ERROR] No se pudo iniciar el servidor Django"
+        echo "[DEBUG] Verificar logs en nohup.out para más información"
+    fi
+    echo "========== SERVIDOR CONFIGURADO =========="
 }
 
 case "$1" in
@@ -266,6 +333,9 @@ case "$1" in
         ;;
     reiniciar_servidor)
         reiniciar_servidor
+        ;;
+    cerrar_procesos)
+        cerrar_procesos
         ;;
     celery)
         iniciar_celery
