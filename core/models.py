@@ -96,3 +96,53 @@ class UrlGuardada(BaseModel):
 
     def __str__(self):
         return f"{self.url} (guardada por {self.usuario.username})"
+
+
+class AnalisisUrlIndividual(BaseModel):
+    """Modelo para análisis de URLs individuales"""
+
+    url = models.URLField(max_length=2000, help_text="URL a analizar")
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    fecha_fin = models.DateTimeField(
+        null=True, blank=True, help_text="Hora de finalización del análisis"
+    )
+    alcance_analisis = models.CharField(
+        max_length=20,
+        choices=[
+            ("1", "1 URL"),
+            ("todas", "Todas las URLs"),
+        ],
+        default="1",
+        help_text="Alcance del análisis",
+    )
+    tipo_analisis = models.CharField(
+        max_length=50,
+        choices=[
+            ("seo", "SEO"),
+            ("accesibilidad", "Accesibilidad"),
+            ("links", "Links"),
+            ("todas", "Todas"),
+        ],
+        default="seo",
+        help_text="Tipo de análisis realizado",
+    )
+    estado = models.CharField(
+        max_length=20,
+        choices=[
+            ("en_progreso", "En progreso"),
+            ("finalizado", "Finalizado"),
+            ("error", "Error"),
+        ],
+        default="en_progreso",
+    )
+    resultados = models.TextField(
+        blank=True, help_text="Resultados del análisis en formato JSON"
+    )
+
+    def __str__(self):
+        return (
+            f"{self.url} - {self.tipo_analisis} ({self.fecha:%Y-%m-%d %H:%M}) por {self.usuario}"
+            if self.usuario
+            else f"{self.url} - {self.tipo_analisis} ({self.fecha:%Y-%m-%d %H:%M})"
+        )

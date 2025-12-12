@@ -1,30 +1,186 @@
-{% extends "base/base.html" %}
-{% block title %}Análisis de URL | PrestaLab{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Análisis de URL | PrestaLabs{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <form method="post" class="mt-3">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="url" class="form-label">URL</label>
-            <input type="url" class="form-control" id="url" name="url" placeholder="https://ejemplo.com/pagina" required>
-        </div>
-        <div class="mb-3">
-            <label for="tipo_analisis" class="form-label">Tipo de análisis</label>
-            <select class="form-select" id="tipo_analisis" name="tipo_analisis">
-                <option value="todas">Todas</option>
-                <option value="formulario">Formulario</option>
-                <option value="analytics">Analytics</option>
-                <option value="schema">Schema.org</option>
-                <option value="links">Links rotos/huerfanos</option>
-                <option value="ortografia">Ortografía</option>
-                <option value="accesibilidad">Accesibilidad</option>
-                <option value="seo">SEO</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Analizar</button>
-    </form>
-    {% if error %}
-        <div class="alert alert-danger mt-3">{{ error }}</div>
-    {% endif %}
+<div class="container-xl py-3">
+	<div class="row mb-4">
+		<div class="col-lg-10 mx-auto">
+			<div class="card border-0 bg-light mb-4">
+				<div class="card-body p-3">
+					<h3 class="mb-3 fw-bold text-dark" style="font-size:1.2rem;">
+						<i class="bi bi-link-45deg me-2"></i> Análisis de URL
+					</h3>
+					
+					<!-- Selector de tipo de análisis -->
+					<div class="row g-2 align-items-center mb-4" style="font-size:0.95em;">
+						<div class="col-md-8">
+							<label for="tipo_analisis_global" class="form-label mb-1">Tipo de análisis a realizar</label>
+							<select class="form-select form-select-sm" id="tipo_analisis_global" name="tipo_analisis_global">
+								<option value="seo">SEO</option>
+								<option value="accesibilidad">Accesibilidad</option>
+								<option value="links">Links</option>
+								<option value="todas">Todas</option>
+							</select>
+							<small class="text-muted">Selecciona el tipo de análisis que aplicarás a las URLs seleccionadas</small>
+						</div>
+					</div>
+					
+					<!-- Buscador de URLs -->
+					{% if urls_disponibles and urls_disponibles|length > 3 %}
+					<div class="mb-3">
+						<form method="get" action="" class="d-flex align-items-center">
+							<div class="flex-grow-1 me-3">
+								<input type="text" name="buscar" class="form-control form-control-sm" 
+								       placeholder="Buscar URLs guardadas..." value="{{ request.GET.buscar }}">
+							</div>
+							<div>
+								<button type="submit" class="btn btn-outline-primary btn-sm me-1">
+									<i class="bi bi-search"></i>
+								</button>
+								{% if request.GET.buscar %}
+								<a href="{% url 'analisis_url' %}" class="btn btn-outline-secondary btn-sm">
+									<i class="bi bi-x-lg"></i>
+								</a>
+								{% endif %}
+							</div>
+						</form>
+					</div>
+					{% endif %}
+					
+					<!-- URLs Guardadas Disponibles -->
+					{% if urls_disponibles and urls_disponibles|length > 0 %}
+					<form method="post" action="" id="form-analizar-urls">
+						{% csrf_token %}
+						<input type="hidden" name="tipo_analisis_seleccionado" id="tipo_analisis_hidden" value="seo">
+						
+						<div class="mb-2 d-flex justify-content-between align-items-center">
+							<div>
+								<h5 class="mb-0 text-dark">URLs Guardadas</h5>
+								<small class="text-muted">
+									{% if request.GET.buscar %}
+										{{ urls_disponibles|length }} URL{{ urls_disponibles|pluralize }} encontrada{{ urls_disponibles|length|pluralize }} para "{{ request.GET.buscar }}"
+									{% else %}
+										Selecciona las URLs que deseas analizar
+									{% endif %}
+								</small>
+							</div>
+							<div>
+								<input type="checkbox" id="check-todos-urls" class="form-check-input me-2">
+								<label for="check-todos-urls" class="form-label mb-0 me-3">Seleccionar todas</label>
+								<button type="submit" name="analizar_seleccionadas" class="btn btn-success btn-sm">
+									<i class="bi bi-search me-1"></i>Analizar seleccionadas
+								</button>
+							</div>
+						</div>
+						
+						<div class="table-responsive mb-4">
+							<table class="table table-hover align-middle bg-white rounded shadow-sm" style="font-size:0.95em;">
+								<thead class="table-light">
+									<tr>
+										<th class="text-center" style="width: 60px;">#</th>
+										<th>URL</th>
+										<th style="width: 120px;">Dominio</th>
+										<th class="text-center" style="width: 80px;">Estado</th>
+										<th class="text-center" style="width: 120px;">Acciones</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for url in urls_disponibles %}
+									<tr>
+										<td class="text-center align-middle">
+											<input type="checkbox" name="analizar_urls" value="{{ url.url }}" class="form-check-input analizar-checkbox">
+											<br><small class="text-muted">{{ forloop.counter }}</small>
+										</td>
+										<td class="align-middle">
+											<div class="d-flex align-items-center">
+												<span class="fw-bold text-dark text-break" style="max-width: 350px;">{{ url.url }}</span>
+											</div>
+											{% if url.titulo and url.titulo != 'Sin título' %}
+											<small class="text-muted d-block">{{ url.titulo }}</small>
+											{% endif %}
+										</td>
+										<td class="align-middle text-secondary">{{ url.dominio }}</td>
+										<td class="text-center align-middle">
+											{% if url.ya_analizada %}
+												<i class="bi bi-check-circle text-success" title="URL ya analizada"></i>
+											{% else %}
+												<i class="bi bi-circle text-muted" title="URL no analizada"></i>
+											{% endif %}
+										</td>
+										<td class="text-center align-middle">
+											<button type="submit" name="analizar_individual" value="{{ url.url }}" class="btn btn-outline-primary btn-sm" title="Analizar esta URL">
+												<i class="bi bi-search"></i>
+											</button>
+										</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					{% else %}
+					<div class="alert alert-info text-center">
+						<i class="bi bi-info-circle me-2"></i>
+						{% if request.GET.buscar %}
+							No se encontraron URLs que coincidan con "{{ request.GET.buscar }}". 
+							<a href="{% url 'analisis_url' %}" class="alert-link">Ver todas las URLs</a> o 
+							<a href="/urls/guardadas/" class="alert-link">agregar nuevas URLs</a>.
+						{% else %}
+							No tienes URLs guardadas. <a href="/urls/guardadas/" class="alert-link">Agrega algunas URLs</a> para poder analizarlas.
+						{% endif %}
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% if mensaje %}
+		<div class="row mb-4">
+			<div class="col-lg-10 mx-auto">
+				<div class="card border-0 shadow-sm">
+					<div class="card-body p-3">
+						<h5 class="card-title mb-3">
+							{% if "Error" in mensaje or "error" in mensaje %}
+								<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>
+							{% elif "exitosamente" in mensaje or "correctamente" in mensaje %}
+								<i class="bi bi-check-circle-fill me-2 text-success"></i>
+							{% else %}
+								<i class="bi bi-info-circle-fill me-2 text-primary"></i>
+							{% endif %}
+							Resultado del Análisis
+						</h5>
+						<div class="mensaje-contenido">
+							{% if "Error" in mensaje or "error" in mensaje %}
+								<span class="text-danger fw-bold">{{ mensaje|safe }}</span>
+							{% elif "exitosamente" in mensaje or "correctamente" in mensaje %}
+								<span class="text-success fw-bold">{{ mensaje|safe }}</span>
+							{% else %}
+								<span class="text-dark">{{ mensaje|safe }}</span>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+
+
+
+
+
+<script>
+// Sincronizar el tipo de análisis seleccionado
+document.getElementById('tipo_analisis_global').addEventListener('change', function() {
+	document.getElementById('tipo_analisis_hidden').value = this.value;
+});
+
+// Funcionalidad para seleccionar todas las URLs
+document.getElementById('check-todos-urls').addEventListener('change', function() {
+	const checkboxes = document.querySelectorAll('.analizar-checkbox');
+	checkboxes.forEach(checkbox => {
+		checkbox.checked = this.checked;
+	});
+});
+</script>
 </div>
 {% endblock %}
