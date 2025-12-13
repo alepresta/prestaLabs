@@ -2039,7 +2039,7 @@ def listar_crawlings_activos_ajax(request):
         return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
 
 
-def index(request):
+def index(request):  # MIGRADO
     """Vista principal del dashboard institucional"""
     return render(request, "dashboard/index.html")
 

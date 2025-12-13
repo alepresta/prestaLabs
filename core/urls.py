@@ -2,7 +2,6 @@
 from django.urls import path
 
 from .views_app import (
-    index,
     analisis_dominio_view,
     dominios_guardados_view,
     exportar_dominio_individual,
@@ -27,6 +26,7 @@ from .views.user_views import (
 # Import crawling views from separated module
 from .views.crawling_views import (
     api_status,
+    index,
     detener_crawling_ajax as crawling_detener_ajax,
     iniciar_crawling_multiple_ajax as crawling_multiple_ajax,
     limpiar_procesos_fantasma_ajax as crawling_limpiar_fantasma,

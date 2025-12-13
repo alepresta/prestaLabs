@@ -1206,3 +1206,9 @@ def limpiar_procesos_colgados():
 def api_status(request):
     """Vista para verificar el estado de la API"""
     return JsonResponse({"status": "ok"})
+
+
+def index(request):
+    """Vista principal del dashboard institucional"""
+    from django.shortcuts import render
+    return render(request, "dashboard/index.html")
