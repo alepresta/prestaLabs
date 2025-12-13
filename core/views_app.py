@@ -395,7 +395,7 @@ def parse_sitemap_urls(content, base_domain, max_urls=100):
 
 
 # --- Guardar búsqueda desde AJAX ---
-def guardar_busqueda_ajax(dominio, urls, user=None):
+def guardar_busqueda_ajax(dominio, urls, user=None):  # MIGRADO
     # Limpiar: quitar vacíos, espacios y duplicados
     urls_limpias = list(dict.fromkeys([u.strip() for u in urls if u and u.strip()]))
 
@@ -1837,7 +1837,7 @@ def json_response_view(request):
 
 
 def limpiar_procesos_fantasma_ajax(request):
-    """Limpia todos los procesos fantasma de la base de datos"""
+    """MIGRADO: Limpia todos los procesos fantasma de la base de datos"""
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
@@ -1883,7 +1883,7 @@ def limpiar_procesos_fantasma_ajax(request):
 
 
 def detener_crawling_ajax(request):
-    """Detiene un proceso de crawling activo específico o el más reciente"""
+    """MIGRADO: Detiene un proceso de crawling activo específico o el más reciente"""
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
@@ -1992,7 +1992,7 @@ def detener_crawling_ajax(request):
 
 
 def listar_crawlings_activos_ajax(request):
-    """Lista todos los crawlings activos del usuario"""
+    """MIGRADO: Lista todos los crawlings activos del usuario"""
     if request.method != "GET":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 

@@ -345,3 +345,246 @@ def verificar_crawling_activo(request):
         )
 
     return JsonResponse({"active": False})
+
+
+def detener_crawling_ajax(request):
+    """Detiene un proceso de crawling activo específico o el más reciente"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    # Buscar crawling activo del usuario
+    usuario = request.user if request.user.is_authenticated else None
+
+    try:
+        # Verificar si se especifica un ID de proceso específico
+        import json
+
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+            progress_id = body.get("progress_id")
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            progress_id = request.POST.get("progress_id")
+
+        if progress_id:
+            # Detener proceso específico
+            try:
+                progress_obj = CrawlingProgress.objects.get(
+                    id=progress_id, is_done=False
+                )
+                # Verificar permisos - solo el usuario propietario o admin
+                if progress_obj.usuario != usuario and not (
+                    usuario and usuario.is_staff
+                ):
+                    return JsonResponse(
+                        {"error": "No tienes permisos para detener este proceso"},
+                        status=403,
+                    )
+            except CrawlingProgress.DoesNotExist:
+                return JsonResponse(
+                    {"error": "Proceso no encontrado o ya terminado"}, status=404
+                )
+        else:
+            # Buscar progreso activo - primero por usuario, sino cualquiera
+            progress_obj = (
+                CrawlingProgress.objects.filter(usuario=usuario, is_done=False)
+                .order_by("-created_at")
+                .first()
+            )
+
+            # Si no hay del usuario, buscar cualquier crawling activo
+            if not progress_obj:
+                progress_obj = (
+                    CrawlingProgress.objects.filter(is_done=False)
+                    .order_by("-created_at")
+                    .first()
+                )
+
+        if not progress_obj:
+            return JsonResponse(
+                {"error": "No hay crawling activo para detener"}, status=404
+            )
+
+        print(
+            f"[STOP] Deteniendo crawling: {progress_obj.progress_key} del dominio {progress_obj.dominio}"
+        )
+
+        # Marcar como detenido
+        progress_obj.is_done = True
+        progress_obj.save()
+
+        # También detener en BusquedaDominio si existe
+        if progress_obj.busqueda_id:
+            try:
+
+                busqueda = BusquedaDominio.objects.get(id=progress_obj.busqueda_id)
+                if not busqueda.fecha_fin:  # Solo si no está ya terminado
+                    busqueda.fecha_fin = timezone.now()
+                    # Guardar URLs parciales si existen
+                    if progress_obj.count > 0 and not busqueda.urls:
+                        urls_list = progress_obj.get_urls_list()
+                        busqueda.urls = "\n".join(urls_list)
+                    busqueda.save()
+                    print(f"[STOP] También terminado BusquedaDominio ID: {busqueda.id}")
+            except BusquedaDominio.DoesNotExist:
+                print(
+                    f"[STOP] BusquedaDominio {progress_obj.busqueda_id} no encontrado"
+                )
+                pass
+
+        # Limpiar de memoria
+        if progress_obj.progress_key in crawling_progress:
+            crawling_progress[progress_obj.progress_key]["done"] = True
+            print(f"[STOP] Limpiado de memoria: {progress_obj.progress_key}")
+
+        print(f"[STOP] Crawling detenido exitosamente: {progress_obj.progress_key}")
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Crawling detenido exitosamente: {progress_obj.dominio}",
+                "dominio": progress_obj.dominio,
+                "progress_key": progress_obj.progress_key,
+            }
+        )
+
+    except Exception as e:
+        print(f"[STOP] Error deteniendo crawling: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return JsonResponse(
+            {"error": f"Error interno del servidor: {str(e)}"}, status=500
+        )
+
+
+def listar_crawlings_activos_ajax(request):
+    """Lista todos los crawlings activos del usuario"""
+    if request.method != "GET":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    usuario = request.user if request.user.is_authenticated else None
+
+    try:
+
+        # Buscar todos los crawlings activos del usuario (últimas 24 horas)
+        hace_24h = timezone.now() - timezone.timedelta(hours=24)
+
+        crawlings_activos = CrawlingProgress.objects.filter(
+            usuario=usuario, is_done=False, created_at__gte=hace_24h
+        ).order_by("-created_at")
+
+        procesos = []
+        for crawling in crawlings_activos:
+            # Verificar si está realmente activo (actualizado en los últimos 5 minutos)
+            hace_5min = timezone.now() - timezone.timedelta(minutes=5)
+            esta_activo = crawling.updated_at >= hace_5min
+
+            procesos.append(
+                {
+                    "id": crawling.id,
+                    "progress_key": crawling.progress_key,
+                    "dominio": crawling.dominio,
+                    "count": crawling.count,
+                    "last_url": crawling.last_url,
+                    "created_at": crawling.created_at.isoformat(),
+                    "updated_at": crawling.updated_at.isoformat(),
+                    "esta_activo": esta_activo,
+                    "busqueda_id": crawling.busqueda_id,
+                }
+            )
+
+        return JsonResponse(
+            {"success": True, "procesos": procesos, "total": len(procesos)}
+        )
+
+    except Exception as e:
+        print(f"[CRAWLINGS_ACTIVOS] Error: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
+
+
+def limpiar_procesos_fantasma_ajax(request):
+    """Limpia todos los procesos fantasma de la base de datos"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+
+        # Limpiar CrawlingProgress huérfanos (más de 1 hora sin actualizar)
+        hace_1h = timezone.now() - timezone.timedelta(hours=1)
+
+        procesos_huerfanos = CrawlingProgress.objects.filter(
+            is_done=False, updated_at__lt=hace_1h
+        )
+
+        count_progress = procesos_huerfanos.count()
+        procesos_huerfanos.update(is_done=True)
+
+        # Limpiar BusquedaDominio sin terminar (más de 1 hora)
+        busquedas_huerfanas = BusquedaDominio.objects.filter(
+            fecha_fin__isnull=True, fecha__lt=hace_1h
+        )
+
+        count_busquedas = busquedas_huerfanas.count()
+        busquedas_huerfanas.update(fecha_fin=timezone.now())
+
+        # Limpiar memoria
+        global crawling_progress
+        crawling_progress.clear()
+
+        mensaje = f"Limpiados {count_progress} procesos fantasma y {count_busquedas} búsquedas huérfanas"
+        print(f"[CLEANUP] {mensaje}")
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": mensaje,
+                "cleaned_progress": count_progress,
+                "cleaned_searches": count_busquedas,
+            }
+        )
+
+    except Exception as e:
+        print(f"[CLEANUP] Error limpiando procesos fantasma: {e}")
+        return JsonResponse({"error": "Error interno del servidor"}, status=500)
+
+
+def guardar_busqueda_ajax(dominio, urls, user=None):
+    # Limpiar: quitar vacíos, espacios y duplicados
+    urls_limpias = list(dict.fromkeys([u.strip() for u in urls if u and u.strip()]))
+
+    # Buscar la última búsqueda sin fecha_fin para este usuario y dominio
+
+    obj = None
+    if user and hasattr(user, "is_authenticated") and user.is_authenticated:
+        obj = (
+            BusquedaDominio.objects.filter(
+                dominio=dominio, usuario=user, fecha_fin__isnull=True
+            )
+            .order_by("-fecha")
+            .first()
+        )
+    else:
+        obj = (
+            BusquedaDominio.objects.filter(
+                dominio=dominio, usuario=None, fecha_fin__isnull=True
+            )
+            .order_by("-fecha")
+            .first()
+        )
+    if obj:
+        obj.urls = "\n".join(urls_limpias)
+        obj.fecha_fin = timezone.now()
+        obj.save()
+    else:
+        BusquedaDominio.objects.create(
+            dominio=dominio,
+            usuario=(
+                user
+                if user and hasattr(user, "is_authenticated") and user.is_authenticated
+                else None
+            ),
+            urls="\n".join(urls_limpias),
+            fecha=timezone.now(),
+        )

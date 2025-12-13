@@ -16,10 +16,6 @@ from .views_app import (
     soporte_view,
     nuevo_reporte_view,
     iniciar_crawling_multiple_ajax,
-
-    listar_crawlings_activos_ajax,
-    detener_crawling_ajax,
-    limpiar_procesos_fantasma_ajax,
 )
 
 # Import user views from separated module
@@ -32,6 +28,9 @@ from .views.user_views import (
 
 # Import crawling views from separated module
 from .views.crawling_views import (
+    detener_crawling_ajax as crawling_detener_ajax,
+    limpiar_procesos_fantasma_ajax as crawling_limpiar_fantasma,
+    listar_crawlings_activos_ajax as crawling_listar_activos,
     progreso_crawling_ajax as crawling_progreso_ajax,
     iniciar_crawling_ajax as crawling_iniciar_ajax,
     verificar_crawling_activo as crawling_verificar_activo,
@@ -98,13 +97,13 @@ urlpatterns = [
     ),
     path(
         "crawling/activos/listar/",
-        listar_crawlings_activos_ajax,
+        crawling_listar_activos,
         name="listar_crawlings_activos_ajax",
     ),
-    path("crawling/detener/", detener_crawling_ajax, name="detener_crawling_ajax"),
+    path("crawling/detener/", crawling_detener_ajax, name="detener_crawling_ajax"),
     path(
         "crawling/limpiar/",
-        limpiar_procesos_fantasma_ajax,
+        crawling_limpiar_fantasma,
         name="limpiar_procesos_fantasma_ajax",
     ),
     path("analisis/estado/", analisis_estado, name="analisis_estado"),
