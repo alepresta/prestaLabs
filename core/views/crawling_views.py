@@ -243,3 +243,105 @@ def progreso_crawling_ajax(request):
         return JsonResponse({"error": "Clave inválida"}, status=404)
     prog = crawling_progress[key]
     return JsonResponse(prog)
+
+
+def sincronizar_estados_crawling():
+    """Sincroniza los estados entre CrawlingProgress y BusquedaDominio"""
+
+    # Buscar CrawlingProgress terminados que tienen BusquedaDominio sin fecha_fin
+    progresos_terminados = CrawlingProgress.objects.filter(
+        is_done=True, busqueda_id__isnull=False
+    )
+
+    for progreso in progresos_terminados:
+        try:
+            busqueda = BusquedaDominio.objects.get(id=progreso.busqueda_id)
+            if not busqueda.fecha_fin:
+                busqueda.fecha_fin = timezone.now()
+                # Actualizar URLs si no existen
+                if progreso.count > 0 and not busqueda.urls:
+                    urls_list = progreso.get_urls_list()
+                    busqueda.urls = "\n".join(urls_list[: progreso.count])
+                busqueda.save()
+                print(f"[SYNC] Sincronizado BusquedaDominio ID {busqueda.id}")
+        except BusquedaDominio.DoesNotExist:
+            pass
+
+    # Buscar BusquedaDominio con fecha_fin que tienen CrawlingProgress sin terminar
+    busquedas_terminadas = BusquedaDominio.objects.filter(
+        fecha_fin__isnull=False
+    ).exclude(
+        id__in=CrawlingProgress.objects.filter(is_done=True).values_list(
+            "busqueda_id", flat=True
+        )
+    )
+
+    for busqueda in busquedas_terminadas:
+        progresos_activos = CrawlingProgress.objects.filter(
+            busqueda_id=busqueda.id, is_done=False
+        )
+        for progreso in progresos_activos:
+            progreso.is_done = True
+            progreso.save()
+            print(f"[SYNC] Marcado progreso como terminado: {progreso.progress_key}")
+
+
+def verificar_crawling_activo(request):
+    """Verifica si hay un crawling activo para el usuario"""
+    usuario = request.user if request.user.is_authenticated else None
+
+    # Primero limpiar procesos colgados y sincronizar estados
+    # Nota: limpiar_procesos_colgados no migrado aún, se saltea por ahora
+    
+    # Sincronizar estados entre CrawlingProgress y BusquedaDominio
+    sincronizar_estados_crawling()
+
+    # Buscar crawlings activos (no completados) de las últimas 24 horas
+
+    hace_24h = timezone.now() - timezone.timedelta(hours=24)
+
+    crawlings_activos = CrawlingProgress.objects.filter(
+        usuario=usuario, is_done=False, created_at__gte=hace_24h
+    ).order_by("-created_at")[:1]
+
+    if crawlings_activos:
+        progress_obj = crawlings_activos[0]
+
+        # Verificar si realmente está activo (actualizado en los últimos 5 minutos)
+        hace_5min = timezone.now() - timezone.timedelta(minutes=5)
+        if progress_obj.updated_at < hace_5min:
+            # Proceso probablemente abandonado, marcarlo como terminado
+            progress_obj.is_done = True
+            progress_obj.save()
+
+            # También actualizar BusquedaDominio si existe
+            if progress_obj.busqueda_id:
+                try:
+                    busqueda = BusquedaDominio.objects.get(id=progress_obj.busqueda_id)
+                    if not busqueda.fecha_fin:
+                        busqueda.fecha_fin = timezone.now()
+                        # Actualizar URLs con el progreso actual
+                        if progress_obj.count > 0 and not busqueda.urls:
+                            urls_list = progress_obj.get_urls_list()
+                            busqueda.urls = "\n".join(urls_list[: progress_obj.count])
+                        busqueda.save()
+                        print(
+                            f"[SYNC] Finalizado proceso abandonado: ID {busqueda.id}, URLs: {progress_obj.count}"
+                        )
+                except BusquedaDominio.DoesNotExist:
+                    pass
+
+            return JsonResponse({"active": False})
+
+        return JsonResponse(
+            {
+                "active": True,
+                "progress_key": progress_obj.progress_key,
+                "dominio": progress_obj.dominio,
+                "count": progress_obj.count,
+                "last": progress_obj.last_url,
+                "urls": progress_obj.get_urls_list(),
+            }
+        )
+
+    return JsonResponse({"active": False})

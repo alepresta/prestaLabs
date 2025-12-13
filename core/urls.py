@@ -16,7 +16,7 @@ from .views_app import (
     soporte_view,
     nuevo_reporte_view,
     iniciar_crawling_multiple_ajax,
-    verificar_crawling_activo,
+
     listar_crawlings_activos_ajax,
     detener_crawling_ajax,
     limpiar_procesos_fantasma_ajax,
@@ -34,6 +34,7 @@ from .views.user_views import (
 from .views.crawling_views import (
     progreso_crawling_ajax as crawling_progreso_ajax,
     iniciar_crawling_ajax as crawling_iniciar_ajax,
+    verificar_crawling_activo as crawling_verificar_activo,
 )
 from core.views.analisis_estado import analisis_estado
 from core.views.test_views import test_session_recovery
@@ -93,7 +94,7 @@ urlpatterns = [
     ),
     path("crawling/progreso/", crawling_progreso_ajax, name="progreso_crawling_ajax"),
     path(
-        "crawling/activo/", verificar_crawling_activo, name="verificar_crawling_activo"
+        "crawling/activo/", crawling_verificar_activo, name="verificar_crawling_activo"
     ),
     path(
         "crawling/activos/listar/",
