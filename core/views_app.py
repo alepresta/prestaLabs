@@ -637,7 +637,7 @@ def iniciar_crawling_ajax_MIGRADO(request):
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
-def iniciar_crawling_multiple_ajax(request):
+def iniciar_crawling_multiple_ajax(request):  # MIGRADO
     """Inicia el crawling para múltiples dominios en background"""
     if request.method == "POST":
         dominios_text = request.POST.get("dominios_multiple", "")
@@ -830,7 +830,7 @@ def normalizar_dominio(dominio_raw):
     return dominio
 
 
-def crawl_urls(base_url, max_urls=None):
+def crawl_urls(base_url, max_urls=None):  # MIGRADO
     """Función auxiliar mejorada para crawlear URLs de un dominio"""
     # Normalizar URL base
     if not base_url.startswith(("http://", "https://")):

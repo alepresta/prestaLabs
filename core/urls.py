@@ -15,7 +15,6 @@ from .views_app import (
     analisis_url_view,
     soporte_view,
     nuevo_reporte_view,
-    iniciar_crawling_multiple_ajax,
 )
 
 # Import user views from separated module
@@ -29,6 +28,7 @@ from .views.user_views import (
 # Import crawling views from separated module
 from .views.crawling_views import (
     detener_crawling_ajax as crawling_detener_ajax,
+    iniciar_crawling_multiple_ajax as crawling_multiple_ajax,
     limpiar_procesos_fantasma_ajax as crawling_limpiar_fantasma,
     listar_crawlings_activos_ajax as crawling_listar_activos,
     progreso_crawling_ajax as crawling_progreso_ajax,
@@ -88,7 +88,7 @@ urlpatterns = [
     path("crawling/iniciar/", crawling_iniciar_ajax, name="iniciar_crawling_ajax"),
     path(
         "crawling/multiple/iniciar/",
-        iniciar_crawling_multiple_ajax,
+        crawling_multiple_ajax,
         name="iniciar_crawling_multiple_ajax",
     ),
     path("crawling/progreso/", crawling_progreso_ajax, name="progreso_crawling_ajax"),
