@@ -754,13 +754,7 @@ def iniciar_crawling_multiple_ajax(request):
     return JsonResponse({"error": "Método no permitido"}, status=405)
 
 
-def progreso_crawling_ajax(request):
-    """Devuelve el progreso actual del crawling"""
-    key = request.GET.get("progress_key")
-    if not key or key not in crawling_progress:
-        return JsonResponse({"error": "Clave inválida"}, status=404)
-    prog = crawling_progress[key]
-    return JsonResponse(prog)
+# progreso_crawling_ajax movido a crawling_views.py
 
 
 def admin_set_password_view(request, user_id):
