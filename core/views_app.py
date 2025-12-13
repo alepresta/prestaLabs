@@ -28,7 +28,7 @@ from .models import (
 crawling_progress = {}
 
 
-def limpiar_procesos_colgados():
+def limpiar_procesos_colgados():  # MIGRADO
     """Limpia procesos de crawling que han quedado colgados"""
 
     # Buscar procesos que no han sido actualizados en más de 10 minutos
@@ -191,7 +191,7 @@ USER_AGENTS = [
 ]
 
 
-def get_random_headers():
+def get_random_headers():  # MIGRADO
     """Genera headers aleatorios para simular navegador real"""
     return {
         "User-Agent": random.choice(USER_AGENTS),
@@ -210,7 +210,7 @@ def get_random_headers():
     }
 
 
-def detect_blocking(response, url):
+def detect_blocking(response, url):  # MIGRADO
     """Detecta si una respuesta indica bloqueo anti-bot"""
     status = response.status_code
     content = response.text.lower() if hasattr(response, "text") else ""
@@ -243,7 +243,7 @@ def detect_blocking(response, url):
     return False, ""
 
 
-def try_sitemap_fallback(domain):
+def try_sitemap_fallback(domain):  # MIGRADO
     """Intenta obtener URLs del sitemap cuando el crawling falla"""
     # Limpiar el dominio de cualquier protocolo previo
     clean_domain = domain.replace("https://", "").replace("http://", "").strip("/")
@@ -329,7 +329,7 @@ def try_sitemap_fallback(domain):
     return []
 
 
-def parse_sitemap_urls(content, base_domain, max_urls=100):
+def parse_sitemap_urls(content, base_domain, max_urls=100):  # MIGRADO
     """Extrae URLs de un sitemap XML"""
     urls = []
     try:
@@ -816,7 +816,7 @@ def api_status(request):
     return JsonResponse({"status": "ok"})
 
 
-def normalizar_dominio(dominio_raw):
+def normalizar_dominio(dominio_raw):  # MIGRADO
     """Normaliza un dominio: quita protocolo, path, puerto, www, etc."""
     dominio_raw = dominio_raw.strip().lower()
     dominio = re.sub(r"^https?://", "", dominio_raw)

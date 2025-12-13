@@ -1170,3 +1170,34 @@ def iniciar_crawling_multiple_ajax(request):
         )
 
     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+def limpiar_procesos_colgados():
+    """Limpia procesos de crawling que han quedado colgados"""
+
+    # Buscar procesos que no han sido actualizados en más de 10 minutos
+    hace_10min = timezone.now() - timezone.timedelta(minutes=10)
+
+    procesos_colgados = CrawlingProgress.objects.filter(
+        is_done=False, updated_at__lt=hace_10min
+    )
+
+    for proceso in procesos_colgados:
+        # Marcar como terminado
+        proceso.is_done = True
+        proceso.save()
+
+        # Actualizar también el BusquedaDominio correspondiente si existe
+        if proceso.busqueda_id:
+            try:
+                busqueda = BusquedaDominio.objects.get(id=proceso.busqueda_id)
+                if not busqueda.fecha_fin:
+                    busqueda.fecha_fin = timezone.now()
+                    # Guardar URLs del progreso si no existen en BusquedaDominio
+                    if proceso.count > 0 and not busqueda.urls:
+                        urls_list = proceso.get_urls_list()
+                        busqueda.urls = "\n".join(urls_list[: proceso.count])
+                    busqueda.save()
+            except BusquedaDominio.DoesNotExist:
+                pass
+
+    return procesos_colgados.count()
