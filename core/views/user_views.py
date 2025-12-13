@@ -7,8 +7,7 @@ Solo maneja requests/responses y delega la lógica de negocio a los servicios.
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.shortcuts import render
 from django.http import JsonResponse
 from ..services.user_service import UserService
 
@@ -26,173 +25,168 @@ def listar_usuarios_view(request):
     Permite filtrar por nombre, email y tipo (admin/lectura).
     """
     user_service = UserService()
-    
+
     # Obtener parámetros de búsqueda
     search_query = request.GET.get("q", "").strip()
     tipo = request.GET.get("tipo", "")
-    
+
     # Obtener usuarios usando el servicio
     usuarios = user_service.get_user_list(search_query)
-    
+
     # Aplicar filtro por tipo
     if tipo == "admin":
         usuarios = usuarios.filter(is_staff=True)
     elif tipo == "lectura":
         usuarios = usuarios.filter(is_staff=False)
-    
+
     # Obtener estadísticas
     stats = user_service.get_user_stats()
-    
+
     context = {
         "usuarios": usuarios,
         "stats": stats,
         "search_query": search_query,
         "tipo_filtro": tipo,
     }
-    
+
     return render(request, "usuarios/listar_usuarios.html", context)
 
 
 @login_required
 @user_passes_test(is_staff_user)
 def nuevo_usuario_view(request):
-    """Vista para crear un nuevo usuario"""
-    user_service = UserService()
-    
+    """Vista para crear un nuevo usuario (admin o lectura)"""
+    from ..forms import UsuarioLecturaForm
+
+    mensaje = ""
     if request.method == "POST":
-        # Obtener datos del formulario
-        data = {
-            'username': request.POST.get('username', '').strip(),
-            'email': request.POST.get('email', '').strip(),
-            'password': request.POST.get('password', ''),
-            'first_name': request.POST.get('first_name', '').strip(),
-            'last_name': request.POST.get('last_name', '').strip(),
-        }
-        
-        # Validar datos
-        is_valid, errors = user_service.validate_user_data(data, is_update=False)
-        
-        if is_valid:
-            # Crear usuario
-            user, created, error_msg = user_service.create_user(
-                data['username'],
-                data['email'],
-                data['password'],
-                data['first_name'],
-                data['last_name']
-            )
-            
-            if created:
-                messages.success(
-                    request, 
-                    f"Usuario '{data['username']}' creado exitosamente"
-                )
-                return redirect('listar_usuarios')
+        form = UsuarioLecturaForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
+            password = form.cleaned_data["password"]
+
+            if User.objects.filter(username=username).exists():
+                mensaje = f"El usuario '{username}' ya existe."
+            elif User.objects.filter(email=email).exists():
+                mensaje = f"El email '{email}' ya está en uso."
             else:
-                messages.error(request, error_msg)
+                is_staff = request.POST.get("is_staff") == "on"
+                user = User.objects.create_user(
+                    username=username, email=email, password=password
+                )
+                user.is_staff = is_staff
+                user.save()
+                mensaje = f"Usuario '{username}' creado correctamente."
+                form = UsuarioLecturaForm()
         else:
-            # Mostrar errores de validación
-            for field, error in errors.items():
-                messages.error(request, f"{field.title()}: {error}")
-    
-    return render(request, "usuarios/nuevo_usuario.html")
+            mensaje = "Corrija los errores indicados."
+    else:
+        form = UsuarioLecturaForm()
+
+    usuarios = User.objects.all().order_by("-date_joined")
+    return render(
+        request,
+        "usuarios/crear_usuario.html",
+        {"form": form, "usuarios": usuarios, "mensaje": mensaje},
+    )
 
 
 @login_required
 @user_passes_test(is_staff_user)
 def editar_usuarios_view(request):
-    """Vista para editar usuarios existentes"""
-    user_service = UserService()
-    
+    """Vista para editar usuarios con filtros, formularios y paginación"""
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+    from ..forms import EditarUsuarioForm
+
+    mensaje = ""
     if request.method == "POST":
-        user_id = request.POST.get('user_id')
-        action = request.POST.get('action')
-        
-        if action == 'update_info':
-            # Actualizar información del usuario
-            data = {
-                'first_name': request.POST.get('first_name', '').strip(),
-                'last_name': request.POST.get('last_name', '').strip(),
-                'email': request.POST.get('email', '').strip(),
-                'is_active': request.POST.get('is_active') == 'on',
-                'is_staff': request.POST.get('is_staff') == 'on',
-            }
-            
-            # Validar solo los datos de actualización
-            validation_data = {
-                'email': data['email'],
-                'username': request.POST.get('username', '')  # Para validación
-            }
-            is_valid, errors = user_service.validate_user_data(
-                validation_data, 
-                is_update=True, 
-                user_id=int(user_id)
-            )
-            
-            if is_valid:
-                success, error_msg = user_service.update_user_info(user_id, data)
-                if success:
-                    messages.success(request, "Usuario actualizado exitosamente")
-                else:
-                    messages.error(request, error_msg)
-            else:
-                for field, error in errors.items():
-                    messages.error(request, f"{field.title()}: {error}")
-        
-        elif action == 'delete':
-            # Eliminar usuario
+        eliminar_id = request.POST.get("eliminar_id")
+        if eliminar_id:
             try:
-                user = User.objects.get(id=user_id)
-                username = user.username
-                user.delete()
-                messages.success(request, f"Usuario '{username}' eliminado exitosamente")
+                usuario = User.objects.get(pk=eliminar_id)
+                usuario.delete()
+                mensaje = "Usuario eliminado correctamente."
             except User.DoesNotExist:
-                messages.error(request, "Usuario no encontrado")
-            except Exception as e:
-                messages.error(request, f"Error eliminando usuario: {str(e)}")
-    
-    # Obtener lista de usuarios para mostrar
-    usuarios = user_service.get_user_list()
-    
-    return render(request, "usuarios/editar_usuarios.html", {"usuarios": usuarios})
-
-
-@login_required
-@user_passes_test(is_staff_user)
-def admin_set_password_view(request, user_id):
-    """Vista para que un admin cambie la contraseña de un usuario"""
-    user_service = UserService()
-    target_user = get_object_or_404(User, id=user_id)
-    
-    if request.method == "POST":
-        new_password = request.POST.get('new_password', '')
-        confirm_password = request.POST.get('confirm_password', '')
-        
-        # Validaciones básicas
-        if not new_password:
-            messages.error(request, "La nueva contraseña es obligatoria")
-        elif len(new_password) < 6:
-            messages.error(request, "La contraseña debe tener al menos 6 caracteres")
-        elif new_password != confirm_password:
-            messages.error(request, "Las contraseñas no coinciden")
+                mensaje = "Usuario no encontrado para eliminar."
         else:
-            # Cambiar contraseña usando el servicio
-            success, error_msg = user_service.update_user_password(user_id, new_password)
-            
-            if success:
-                messages.success(
-                    request, 
-                    f"Contraseña actualizada exitosamente para '{target_user.username}'"
-                )
-                return redirect('listar_usuarios')
-            else:
-                messages.error(request, error_msg)
-    
+            user_id = request.POST.get("user_id")
+            if user_id:
+                try:
+                    usuario = User.objects.get(pk=user_id)
+                except User.DoesNotExist:
+                    mensaje = "Usuario no encontrado."
+                else:
+                    form = EditarUsuarioForm(request.POST, instance=usuario)
+                    if form.is_valid():
+                        form.save()
+                        mensaje = f"Usuario '{usuario.username}' actualizado."
+                    else:
+                        mensaje = "Error al actualizar el usuario."
+
+    q = request.GET.get("q", "").strip()
+    tipo = request.GET.get("tipo", "")
+    usuarios = User.objects.all()
+
+    if q:
+        usuarios = usuarios.filter(Q(username__icontains=q) | Q(email__icontains=q))
+    if tipo == "admin":
+        usuarios = usuarios.filter(is_staff=True)
+    elif tipo == "lectura":
+        usuarios = usuarios.filter(is_staff=False)
+
+    usuarios = usuarios.order_by("-date_joined")
+
+    paginator = Paginator(usuarios, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    forms_dict = {}
+    for usuario in page_obj:
+        forms_dict[usuario.id] = EditarUsuarioForm(instance=usuario)
+
     context = {
-        "target_user": target_user,
+        "usuarios": page_obj,
+        "forms_dict": forms_dict,
+        "page_obj": page_obj,
+        "mensaje": mensaje,
     }
-    
-    return render(request, "usuarios/admin_set_password.html", context)
+    return render(request, "usuarios/editar_usuarios.html", context)
+
+
+def admin_set_password_view(request, user_id):
+    """Vista para que un admin cambie la contraseña de cualquier usuario"""
+    from ..forms import AdminSetPasswordForm
+
+    try:
+        usuario = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return render(
+            request,
+            "usuarios/cambiar_password.html",
+            {"error": "Usuario no encontrado."},
+        )
+
+    mensaje = ""
+    if request.method == "POST":
+        form = AdminSetPasswordForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data["new_password1"]
+            usuario.set_password(new_password)
+            usuario.save()
+            mensaje = f"Contraseña actualizada para {usuario.username}."
+            form = AdminSetPasswordForm()
+        else:
+            mensaje = "Corrija los errores indicados."
+    else:
+        form = AdminSetPasswordForm()
+
+    return render(
+        request,
+        "usuarios/cambiar_password.html",
+        {"form": form, "usuario": usuario, "mensaje": mensaje},
+    )
 
 
 # API endpoints para operaciones AJAX
@@ -205,27 +199,29 @@ def user_stats_api(request):
     return JsonResponse(stats)
 
 
-@login_required 
+@login_required
 @user_passes_test(is_staff_user)
 def toggle_user_status_api(request):
     """API endpoint para activar/desactivar usuarios via AJAX"""
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
-    
+
     try:
-        user_id = request.POST.get('user_id')
+        user_id = request.POST.get("user_id")
         user = User.objects.get(id=user_id)
-        
+
         # Cambiar estado
         user.is_active = not user.is_active
         user.save()
-        
-        return JsonResponse({
-            "success": True,
-            "message": f"Usuario {'activado' if user.is_active else 'desactivado'} exitosamente",
-            "is_active": user.is_active
-        })
-        
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"Usuario {'activado' if user.is_active else 'desactivado'} exitosamente",
+                "is_active": user.is_active,
+            }
+        )
+
     except User.DoesNotExist:
         return JsonResponse({"error": "Usuario no encontrado"}, status=404)
     except Exception as e:

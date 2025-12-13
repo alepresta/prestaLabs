@@ -1,7 +1,6 @@
 # Core URLs for PrestaLabs
 from django.urls import path
 
-# Import main views
 from .views_app import (
     index,
     api_status,
@@ -16,6 +15,13 @@ from .views_app import (
     analisis_url_view,
     soporte_view,
     nuevo_reporte_view,
+    iniciar_crawling_ajax,
+    iniciar_crawling_multiple_ajax,
+    progreso_crawling_ajax,
+    verificar_crawling_activo,
+    listar_crawlings_activos_ajax,
+    detener_crawling_ajax,
+    limpiar_procesos_fantasma_ajax,
 )
 
 # Import user views from new module
@@ -24,19 +30,6 @@ from .views.user_views import (
     nuevo_usuario_view,
     editar_usuarios_view,
     admin_set_password_view,
-    user_stats_api,
-    toggle_user_status_api,
-)
-
-# Import crawling views from new module
-from .views.crawling_views import (
-    iniciar_crawling_ajax,
-    progreso_crawling_ajax,
-    verificar_crawling_activo,
-    detener_crawling_ajax,
-    iniciar_crawling_multiple_ajax,
-    listar_crawlings_activos_ajax,
-    limpiar_procesos_fantasma_ajax,
 )
 from core.views.analisis_estado import analisis_estado
 from core.views.test_views import test_session_recovery
