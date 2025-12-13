@@ -1,18 +1,26 @@
+"""
+Vistas para el módulo de crawling.
+
+Este módulo contiene todas las vistas relacionadas con el crawling de sitios web.
+Solo maneja requests/responses y delega la lógica de negocio a los servicios.
+"""
+
 import threading
 import time
-import re
-import random
 import json
-from urllib.parse import urljoin, urlparse
-from defusedxml.ElementTree import fromstring as ET_fromstring
-import requests
-from bs4 import BeautifulSoup
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils import timezone
-from ..models import (
-    BusquedaDominio,
-    CrawlingProgress,
+from ..models import BusquedaDominio, CrawlingProgress
+from ..services.crawling_service import (
+    CrawlingService, 
+    CrawlingProgressService,
+)
+from ..utils.domain_utils import (
+    normalizar_dominio, 
+    validar_dominio, 
+    get_working_base_url,
+    limpiar_dominio_para_url
 )
 
 # Variable global temporal para progreso (en producción usar cache/db)

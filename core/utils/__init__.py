@@ -1,0 +1,1 @@
+# Utils package - Contiene funciones utilitarias específicas

@@ -14,12 +14,18 @@ from .views_app import (
     configuracion_view,
     reportes_view,
     analisis_url_view,
-    editar_usuarios_view,
     soporte_view,
-    nuevo_usuario_view,
     nuevo_reporte_view,
+)
+
+# Import user views from new module
+from .views.user_views import (
     listar_usuarios_view,
+    nuevo_usuario_view,
+    editar_usuarios_view,
     admin_set_password_view,
+    user_stats_api,
+    toggle_user_status_api,
 )
 
 # Import crawling views from new module
