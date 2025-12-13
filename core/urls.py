@@ -24,7 +24,7 @@ from .views_app import (
     limpiar_procesos_fantasma_ajax,
 )
 
-# Import user views from new module
+# Import user views from separated module
 from .views.user_views import (
     listar_usuarios_view,
     nuevo_usuario_view,
