@@ -15,7 +15,6 @@ from .views_app import (
     analisis_url_view,
     soporte_view,
     nuevo_reporte_view,
-    iniciar_crawling_ajax,
     iniciar_crawling_multiple_ajax,
     verificar_crawling_activo,
     listar_crawlings_activos_ajax,
@@ -34,6 +33,7 @@ from .views.user_views import (
 # Import crawling views from separated module
 from .views.crawling_views import (
     progreso_crawling_ajax as crawling_progreso_ajax,
+    iniciar_crawling_ajax as crawling_iniciar_ajax,
 )
 from core.views.analisis_estado import analisis_estado
 from core.views.test_views import test_session_recovery
@@ -85,7 +85,7 @@ urlpatterns = [
         admin_set_password_view,
         name="admin_set_password",
     ),
-    path("crawling/iniciar/", iniciar_crawling_ajax, name="iniciar_crawling_ajax"),
+    path("crawling/iniciar/", crawling_iniciar_ajax, name="iniciar_crawling_ajax"),
     path(
         "crawling/multiple/iniciar/",
         iniciar_crawling_multiple_ajax,

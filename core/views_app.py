@@ -435,7 +435,8 @@ def guardar_busqueda_ajax(dominio, urls, user=None):
         )
 
 
-def crawl_urls_progress(base_url, max_urls, progress_key):
+# crawl_urls_progress movido a crawling_views.py
+def crawl_urls_progress_MIGRADO():
     visited = set()
     to_visit = [base_url]
     urls = []
@@ -543,7 +544,8 @@ def crawl_urls_progress(base_url, max_urls, progress_key):
     return urls
 
 
-def iniciar_crawling_ajax(request):
+# iniciar_crawling_ajax movido a crawling_views.py
+def iniciar_crawling_ajax_MIGRADO(request):
     """Inicia el crawling en background y retorna una key de progreso"""
     if request.method == "POST":
         dominio = request.POST.get("dominio")
