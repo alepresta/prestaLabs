@@ -15,7 +15,9 @@ from xml.etree.ElementTree import fromstring as ET_fromstring
 
 import requests
 from bs4 import BeautifulSoup
+from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.utils import timezone
 
 from ..models import BusquedaDominio, CrawlingProgress
@@ -1210,5 +1212,84 @@ def api_status(request):
 
 def index(request):
     """Vista principal del dashboard institucional"""
-    from django.shortcuts import render
     return render(request, "dashboard/index.html")
+
+
+def dominios_guardados_view(request):
+    """Vista para mostrar solo los dominios guardados"""
+    mensaje = ""
+
+    # Manejar acciones POST (eliminación)
+    if request.method == "POST":
+        if "eliminar_individual" in request.POST:
+            eliminar_id = request.POST.get("eliminar_individual")
+
+            # Verificar si hay crawling activo para este dominio
+            try:
+                CrawlingProgress.objects.get(busqueda_id=eliminar_id, is_done=False)
+                mensaje = (
+                    "No se puede eliminar el análisis porque hay un proceso "
+                    "de crawling activo. Por favor espera a que termine o "
+                    "detén el proceso antes de eliminar."
+                )
+            except CrawlingProgress.DoesNotExist:
+                # Si no hay crawling activo, proceder con la eliminación
+                # Obtener el dominio antes de eliminarlo
+                try:
+                    busqueda_obj = BusquedaDominio.objects.get(id=eliminar_id)
+                    dominio_eliminado = busqueda_obj.dominio
+                except BusquedaDominio.DoesNotExist:
+                    dominio_eliminado = "desconocido"
+
+                # Eliminar de CrawlingProgress
+                CrawlingProgress.objects.filter(busqueda_id=eliminar_id).delete()
+                # Finalmente eliminar la BusquedaDominio
+                BusquedaDominio.objects.filter(id=eliminar_id).delete()
+                mensaje = (
+                    f"Búsqueda del dominio '{dominio_eliminado}' "
+                    "eliminada correctamente."
+                )
+
+    # Obtener solo los dominios marcados como guardados
+    dominios_guardados = BusquedaDominio.objects.filter(guardado=True).order_by(
+        "-fecha"
+    )
+
+    # Aplicar paginación
+    paginator = Paginator(dominios_guardados, 20)  # 20 dominios por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Procesar datos para la tabla
+    dominios_tabla = []
+    for b in page_obj:
+        dom_norm = normalizar_dominio(b.dominio)
+
+        # Verificar si tiene crawling activo
+        tiene_progreso_activo = CrawlingProgress.objects.filter(
+            busqueda_id=b.id, is_done=False
+        ).exists()
+
+        dominios_tabla.append(
+            {
+                "id": b.id,
+                "dominio": b.dominio,
+                "dominio_normalizado": dom_norm,
+                "fecha": b.fecha,
+                "fecha_fin": b.fecha_fin,
+                "usuario": b.usuario,
+                "urls_count": len(b.get_urls()),
+                "guardado": b.guardado,
+                "puede_detener": tiene_progreso_activo,
+            }
+        )
+
+    context = {
+        "dominios": dominios_tabla,
+        "page_obj": page_obj,
+        "total_guardados": dominios_guardados.count(),
+        "titulo_pagina": "Dominios Guardados",
+        "mensaje": mensaje,
+    }
+
+    return render(request, "dominios_guardados.html", context)

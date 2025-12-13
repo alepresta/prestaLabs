@@ -2044,7 +2044,7 @@ def index(request):  # MIGRADO
     return render(request, "dashboard/index.html")
 
 
-def dominios_guardados_view(request):
+def dominios_guardados_view(request):  # MIGRADO
     """Vista para mostrar solo los dominios guardados"""
     mensaje = ""
 
