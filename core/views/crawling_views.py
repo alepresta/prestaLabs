@@ -1201,3 +1201,8 @@ def limpiar_procesos_colgados():
                 pass
 
     return procesos_colgados.count()
+
+
+def api_status(request):
+    """Vista para verificar el estado de la API"""
+    return JsonResponse({"status": "ok"})

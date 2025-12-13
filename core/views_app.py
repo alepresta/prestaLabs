@@ -60,7 +60,7 @@ def limpiar_procesos_colgados():  # MIGRADO
     return procesos_colgados.count()
 
 
-def sincronizar_estados_crawling():
+def sincronizar_estados_crawling():  # MIGRADO
     """Sincroniza los estados entre CrawlingProgress y BusquedaDominio"""
 
     # Buscar CrawlingProgress terminados que tienen BusquedaDominio sin fecha_fin
@@ -101,7 +101,7 @@ def sincronizar_estados_crawling():
             print(f"[SYNC] Marcado progreso como terminado: {progreso.progress_key}")
 
 
-def verificar_crawling_activo(request):
+def verificar_crawling_activo(request):  # MIGRADO
     """Verifica si hay un crawling activo para el usuario"""
     usuario = request.user if request.user.is_authenticated else None
 
@@ -811,7 +811,7 @@ def listar_usuarios_view(request):
     return render(request, "usuarios/listar_usuarios.html", {"usuarios": usuarios})
 
 
-def api_status(request):
+def api_status(request):  # MIGRADO
     """Vista para verificar el estado de la API"""
     return JsonResponse({"status": "ok"})
 
